@@ -1,0 +1,227 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v2.7.14)
+
+2025-08-24 08:30:06.217 - INFO 41383 --- [           main] com.usdttrading.UsdtTradingApplication   : Starting UsdtTradingApplication v1.0.0 using Java 21.0.8 on JJ.local with PID 41383 (/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar started by jason in /Users/jason/Projects/usdtClaudeCode/backend)
+-2025-08-24 08:30:06.218 -DEBUG 41383 --- [           main] com.usdttrading.UsdtTradingApplication   : Running with Spring Boot v2.7.14, Spring v5.3.29
+-2025-08-24 08:30:06.219 - INFO 41383 --- [           main] com.usdttrading.UsdtTradingApplication   : The following 1 profile is active: "dev"
+-2025-08-24 08:30:06.995 - INFO 41383 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+-2025-08-24 08:30:06.997 - INFO 41383 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+-2025-08-24 08:30:07.013 - INFO 41383 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 7 ms. Found 0 Redis repository interfaces.
+-2025-08-24 08:30:07.112 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/RoleMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/WalletTransactionMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/KycDocumentMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/PlatformWalletMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/AnnouncementMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/SecurityEventMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/UserMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/SystemConfigMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/OrderTransactionMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/PriceHistoryMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/UserProfileMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/KycRiskAssessmentMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/UserSessionMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/UserKycMapper.class]
+-2025-08-24 08:30:07.113 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/KycReviewMapper.class]
+-2025-08-24 08:30:07.114 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/WalletMapper.class]
+-2025-08-24 08:30:07.114 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/WithdrawalMapper.class]
+-2025-08-24 08:30:07.114 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/TransactionMapper.class]
+-2025-08-24 08:30:07.114 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Ignored because not a concrete top-level class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/OrderMapper$OrderStatistics.class]
+-2025-08-24 08:30:07.114 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/NotificationMapper.class]
+-2025-08-24 08:30:07.114 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/KycWorkflowStepMapper.class]
+-2025-08-24 08:30:07.114 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/OrderMapper.class]
+-2025-08-24 08:30:07.114 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Identified candidate component class: URL [jar:file:/Users/jason/Projects/usdtClaudeCode/backend/target/usdt-trading-platform-1.0.0.jar!/BOOT-INF/classes!/com/usdttrading/repository/AuditLogMapper.class]
+-2025-08-24 08:30:07.114 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'roleMapper' and 'com.usdttrading.repository.RoleMapper' mapperInterface
+-2025-08-24 08:30:07.116 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'roleMapper'.
+-2025-08-24 08:30:07.116 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'walletTransactionMapper' and 'com.usdttrading.repository.WalletTransactionMapper' mapperInterface
+-2025-08-24 08:30:07.116 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'walletTransactionMapper'.
+-2025-08-24 08:30:07.116 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'kycDocumentMapper' and 'com.usdttrading.repository.KycDocumentMapper' mapperInterface
+-2025-08-24 08:30:07.116 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'kycDocumentMapper'.
+-2025-08-24 08:30:07.116 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'platformWalletMapper' and 'com.usdttrading.repository.PlatformWalletMapper' mapperInterface
+-2025-08-24 08:30:07.116 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'platformWalletMapper'.
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'announcementMapper' and 'com.usdttrading.repository.AnnouncementMapper' mapperInterface
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'announcementMapper'.
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'securityEventMapper' and 'com.usdttrading.repository.SecurityEventMapper' mapperInterface
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'securityEventMapper'.
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'userMapper' and 'com.usdttrading.repository.UserMapper' mapperInterface
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'userMapper'.
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'systemConfigMapper' and 'com.usdttrading.repository.SystemConfigMapper' mapperInterface
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'systemConfigMapper'.
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'orderTransactionMapper' and 'com.usdttrading.repository.OrderTransactionMapper' mapperInterface
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'orderTransactionMapper'.
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'priceHistoryMapper' and 'com.usdttrading.repository.PriceHistoryMapper' mapperInterface
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'priceHistoryMapper'.
+-2025-08-24 08:30:07.117 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'userProfileMapper' and 'com.usdttrading.repository.UserProfileMapper' mapperInterface
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'userProfileMapper'.
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'kycRiskAssessmentMapper' and 'com.usdttrading.repository.KycRiskAssessmentMapper' mapperInterface
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'kycRiskAssessmentMapper'.
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'userSessionMapper' and 'com.usdttrading.repository.UserSessionMapper' mapperInterface
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'userSessionMapper'.
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'userKycMapper' and 'com.usdttrading.repository.UserKycMapper' mapperInterface
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'userKycMapper'.
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'kycReviewMapper' and 'com.usdttrading.repository.KycReviewMapper' mapperInterface
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'kycReviewMapper'.
+-2025-08-24 08:30:07.118 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'walletMapper' and 'com.usdttrading.repository.WalletMapper' mapperInterface
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'walletMapper'.
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'withdrawalMapper' and 'com.usdttrading.repository.WithdrawalMapper' mapperInterface
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'withdrawalMapper'.
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'transactionMapper' and 'com.usdttrading.repository.TransactionMapper' mapperInterface
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'transactionMapper'.
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'notificationMapper' and 'com.usdttrading.repository.NotificationMapper' mapperInterface
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'notificationMapper'.
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'kycWorkflowStepMapper' and 'com.usdttrading.repository.KycWorkflowStepMapper' mapperInterface
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'kycWorkflowStepMapper'.
+-2025-08-24 08:30:07.119 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'orderMapper' and 'com.usdttrading.repository.OrderMapper' mapperInterface
+-2025-08-24 08:30:07.120 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'orderMapper'.
+-2025-08-24 08:30:07.120 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Creating MapperFactoryBean with name 'auditLogMapper' and 'com.usdttrading.repository.AuditLogMapper' mapperInterface
+-2025-08-24 08:30:07.120 -DEBUG 41383 --- [           main] o.m.s.mapper.ClassPathMapperScanner      : Enabling autowire by type for MapperFactoryBean with name 'auditLogMapper'.
+-2025-08-24 08:30:07.838 - INFO 41383 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+-2025-08-24 08:30:07.845 - INFO 41383 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+-2025-08-24 08:30:07.845 - INFO 41383 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
+-2025-08-24 08:30:07.890 - INFO 41383 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring embedded WebApplicationContext
+-2025-08-24 08:30:07.891 - INFO 41383 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1640 ms
+-2025-08-24 08:30:07.976 - INFO 41383 --- [           main] c.a.d.s.b.a.DruidDataSourceAutoConfigure : Init DruidDataSource
+-2025-08-24 08:30:08.045 -ERROR 41383 --- [           main] o.s.b.web.embedded.tomcat.TomcatStarter  : Error starting Tomcat context. Exception: org.springframework.beans.factory.UnsatisfiedDependencyException. Message: Error creating bean with name 'webMvcMetricsFilter' defined in class path resource [org/springframework/boot/actuate/autoconfigure/metrics/web/servlet/WebMvcMetricsAutoConfiguration.class]: Unsatisfied dependency expressed through method 'webMvcMetricsFilter' parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'simpleMeterRegistry' defined in class path resource [org/springframework/boot/actuate/autoconfigure/metrics/export/simple/SimpleMetricsExportAutoConfiguration.class]: Initialization of bean failed; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'dataSourcePoolMetadataMeterBinder' defined in class path resource [org/springframework/boot/actuate/autoconfigure/metrics/jdbc/DataSourcePoolMetricsAutoConfiguration$DataSourcePoolMetadataMetricsConfiguration.class]: Unsatisfied dependency expressed through method 'dataSourcePoolMetadataMeterBinder' parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSource' defined in class path resource [com/alibaba/druid/spring/boot/autoconfigure/DruidDataSourceAutoConfigure.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: Cannot load driver class: org.h2.Driver
+-2025-08-24 08:30:08.067 - INFO 41383 --- [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+-2025-08-24 08:30:08.126 - WARN 41383 --- [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Unable to start web server; nested exception is org.springframework.boot.web.server.WebServerException: Unable to start embedded Tomcat
+-2025-08-24 08:30:08.137 - INFO 41383 --- [           main] ConditionEvaluationReportLoggingListener : 
+
+Error starting ApplicationContext. To display the conditions report re-run your application with 'debug' enabled.
+-2025-08-24 08:30:08.166 -ERROR 41383 --- [           main] o.s.boot.SpringApplication               : Application run failed
+-
+org.springframework.context.ApplicationContextException: Unable to start web server; nested exception is org.springframework.boot.web.server.WebServerException: Unable to start embedded Tomcat
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:165) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:577) ~[spring-context-5.3.29.jar!/:5.3.29]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:147) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:731) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:408) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:307) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1303) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1292) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at com.usdttrading.UsdtTradingApplication.main(UsdtTradingApplication.java:25) ~[classes!/:1.0.0]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.boot.loader.MainMethodRunner.run(MainMethodRunner.java:49) ~[usdt-trading-platform-1.0.0.jar:1.0.0]
+	at org.springframework.boot.loader.Launcher.launch(Launcher.java:108) ~[usdt-trading-platform-1.0.0.jar:1.0.0]
+	at org.springframework.boot.loader.Launcher.launch(Launcher.java:58) ~[usdt-trading-platform-1.0.0.jar:1.0.0]
+	at org.springframework.boot.loader.JarLauncher.main(JarLauncher.java:65) ~[usdt-trading-platform-1.0.0.jar:1.0.0]
+Caused by: org.springframework.boot.web.server.WebServerException: Unable to start embedded Tomcat
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:142) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.<init>(TomcatWebServer.java:104) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getTomcatWebServer(TomcatServletWebServerFactory.java:481) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory.getWebServer(TomcatServletWebServerFactory.java:211) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.createWebServer(ServletWebServerApplicationContext.java:184) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.onRefresh(ServletWebServerApplicationContext.java:162) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	... 14 common frames omitted
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'webMvcMetricsFilter' defined in class path resource [org/springframework/boot/actuate/autoconfigure/metrics/web/servlet/WebMvcMetricsAutoConfiguration.class]: Unsatisfied dependency expressed through method 'webMvcMetricsFilter' parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'simpleMeterRegistry' defined in class path resource [org/springframework/boot/actuate/autoconfigure/metrics/export/simple/SimpleMetricsExportAutoConfiguration.class]: Initialization of bean failed; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'dataSourcePoolMetadataMeterBinder' defined in class path resource [org/springframework/boot/actuate/autoconfigure/metrics/jdbc/DataSourcePoolMetricsAutoConfiguration$DataSourcePoolMetadataMetricsConfiguration.class]: Unsatisfied dependency expressed through method 'dataSourcePoolMetadataMeterBinder' parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSource' defined in class path resource [com/alibaba/druid/spring/boot/autoconfigure/DruidDataSourceAutoConfigure.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: Cannot load driver class: org.h2.Driver
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:800) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:541) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1352) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1195) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:582) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:213) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.getOrderedBeansOfType(ServletContextInitializerBeans.java:213) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.getOrderedBeansOfType(ServletContextInitializerBeans.java:204) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.addServletContextInitializerBeans(ServletContextInitializerBeans.java:98) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.servlet.ServletContextInitializerBeans.<init>(ServletContextInitializerBeans.java:86) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.getServletContextInitializerBeans(ServletWebServerApplicationContext.java:262) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.selfInitialize(ServletWebServerApplicationContext.java:236) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.web.embedded.tomcat.TomcatStarter.onStartup(TomcatStarter.java:53) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	at org.apache.catalina.core.StandardContext.startInternal(StandardContext.java:4936) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1328) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1318) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317) ~[na:na]
+	at org.apache.tomcat.util.threads.InlineExecutorService.execute(InlineExecutorService.java:75) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145) ~[na:na]
+	at org.apache.catalina.core.ContainerBase.startInternal(ContainerBase.java:866) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.core.StandardHost.startInternal(StandardHost.java:795) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1328) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.core.ContainerBase$StartChild.call(ContainerBase.java:1318) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317) ~[na:na]
+	at org.apache.tomcat.util.threads.InlineExecutorService.execute(InlineExecutorService.java:75) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at java.base/java.util.concurrent.AbstractExecutorService.submit(AbstractExecutorService.java:145) ~[na:na]
+	at org.apache.catalina.core.ContainerBase.startInternal(ContainerBase.java:866) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.core.StandardEngine.startInternal(StandardEngine.java:249) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.core.StandardService.startInternal(StandardService.java:428) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.core.StandardServer.startInternal(StandardServer.java:922) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:183) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.apache.catalina.startup.Tomcat.start(Tomcat.java:486) ~[tomcat-embed-core-9.0.78.jar!/:na]
+	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer.initialize(TomcatWebServer.java:123) ~[spring-boot-2.7.14.jar!/:2.7.14]
+	... 19 common frames omitted
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'simpleMeterRegistry' defined in class path resource [org/springframework/boot/actuate/autoconfigure/metrics/export/simple/SimpleMetricsExportAutoConfiguration.class]: Initialization of bean failed; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'dataSourcePoolMetadataMeterBinder' defined in class path resource [org/springframework/boot/actuate/autoconfigure/metrics/jdbc/DataSourcePoolMetricsAutoConfiguration$DataSourcePoolMetadataMetricsConfiguration.class]: Unsatisfied dependency expressed through method 'dataSourcePoolMetadataMeterBinder' parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSource' defined in class path resource [com/alibaba/druid/spring/boot/autoconfigure/DruidDataSourceAutoConfigure.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: Cannot load driver class: org.h2.Driver
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:628) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1391) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1311) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:887) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:791) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	... 59 common frames omitted
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'dataSourcePoolMetadataMeterBinder' defined in class path resource [org/springframework/boot/actuate/autoconfigure/metrics/jdbc/DataSourcePoolMetricsAutoConfiguration$DataSourcePoolMetadataMetricsConfiguration.class]: Unsatisfied dependency expressed through method 'dataSourcePoolMetadataMeterBinder' parameter 0; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSource' defined in class path resource [com/alibaba/druid/spring/boot/autoconfigure/DruidDataSourceAutoConfigure.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: Cannot load driver class: org.h2.Driver
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:800) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:541) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod(AbstractAutowireCapableBeanFactory.java:1352) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1195) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:582) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.addCandidateEntry(DefaultListableBeanFactory.java:1616) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.findAutowireCandidates(DefaultListableBeanFactory.java:1573) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveMultipleBeans(DefaultListableBeanFactory.java:1417) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1349) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory$DependencyObjectProvider.resolveStream(DefaultListableBeanFactory.java:2119) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory$DependencyObjectProvider.orderedStream(DefaultListableBeanFactory.java:2113) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryConfigurer.addBinders(MeterRegistryConfigurer.java:87) ~[spring-boot-actuator-autoconfigure-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryConfigurer.configure(MeterRegistryConfigurer.java:68) ~[spring-boot-actuator-autoconfigure-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryPostProcessor.postProcessAfterInitialization(MeterRegistryPostProcessor.java:64) ~[spring-boot-actuator-autoconfigure-2.7.14.jar!/:2.7.14]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsAfterInitialization(AbstractAutowireCapableBeanFactory.java:455) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1808) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:620) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	... 69 common frames omitted
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSource' defined in class path resource [com/alibaba/druid/spring/boot/autoconfigure/DruidDataSourceAutoConfigure.class]: Invocation of init method failed; nested exception is java.lang.IllegalStateException: Cannot load driver class: org.h2.Driver
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1804) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:620) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:335) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:333) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:208) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:276) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.addCandidateEntry(DefaultListableBeanFactory.java:1609) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.findAutowireCandidates(DefaultListableBeanFactory.java:1573) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveMultipleBeans(DefaultListableBeanFactory.java:1492) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1349) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1311) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:887) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:791) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	... 91 common frames omitted
+Caused by: java.lang.IllegalStateException: Cannot load driver class: org.h2.Driver
+	at org.springframework.util.Assert.state(Assert.java:97) ~[spring-core-5.3.29.jar!/:5.3.29]
+	at org.springframework.boot.autoconfigure.jdbc.DataSourceProperties.determineDriverClassName(DataSourceProperties.java:175) ~[spring-boot-autoconfigure-2.7.14.jar!/:2.7.14]
+	at org.springframework.boot.autoconfigure.jdbc.DataSourceProperties.determinePassword(DataSourceProperties.java:308) ~[spring-boot-autoconfigure-2.7.14.jar!/:2.7.14]
+	at com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceWrapper.afterPropertiesSet(DruidDataSourceWrapper.java:42) ~[druid-spring-boot-starter-1.2.20.jar!/:na]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1863) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1800) ~[spring-beans-5.3.29.jar!/:5.3.29]
+	... 105 common frames omitted
+

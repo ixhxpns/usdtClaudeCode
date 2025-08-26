@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.usdttrading.repository.UserSessionMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.usdttrading.entity.UserSession">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="session_id" property="sessionId" />
+        <result column="token" property="token" />
+        <result column="refresh_token" property="refreshToken" />
+        <result column="device_type" property="deviceType" />
+        <result column="device_info" property="deviceInfo" />
+        <result column="ip_address" property="ipAddress" />
+        <result column="user_agent" property="userAgent" />
+        <result column="location" property="location" />
+        <result column="is_active" property="isActive" />
+        <result column="last_activity" property="lastActivity" />
+        <result column="expires_at" property="expiresAt" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="deleted" property="deleted" />
+        <result column="user_email" property="userEmail" />
+    </resultMap>
+
+    <!-- 通用查询SQL片段 -->
+    <sql id="selectUserSessionWithUser">
+        SELECT us.*, u.email as user_email
+        FROM user_sessions us 
+        LEFT JOIN users u ON us.user_id = u.id 
+        WHERE us.deleted = 0
+    </sql>
+
+    <!-- 查询条件SQL片段 -->
+    <sql id="whereConditions">
+        <where>
+            <if test="userId != null">
+                AND us.user_id = #{userId}
+            </if>
+            <if test="sessionId != null and sessionId != ''">
+                AND us.session_id = #{sessionId}
+            </if>
+            <if test="token != null and token != ''">
+                AND us.token = #{token}
+            </if>
+            <if test="deviceType != null and deviceType != ''">
+                AND us.device_type = #{deviceType}
+            </if>
+            <if test="ipAddress != null and ipAddress != ''">
+                AND us.ip_address = #{ipAddress}
+            </if>
+            <if test="isActive != null">
+                AND us.is_active = #{isActive}
+            </if>
+            <if test="startTime != null">
+                AND us.created_at >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND us.created_at &lt;= #{endTime}
+            </if>
+            <if test="lastActivityAfter != null">
+                AND us.last_activity >= #{lastActivityAfter}
+            </if>
+            <if test="lastActivityBefore != null">
+                AND us.last_activity &lt;= #{lastActivityBefore}
+            </if>
+            <if test="expiresAfter != null">
+                AND us.expires_at >= #{expiresAfter}
+            </if>
+            <if test="expiresBefore != null">
+                AND us.expires_at &lt;= #{expiresBefore}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 根据ID查询用户会话（包含用户信息） -->
+    <select id="selectById" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.id = #{id}
+    </select>
+
+    <!-- 分页查询用户会话列表 -->
+    <select id="selectUserSessionList" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        <include refid="whereConditions" />
+        ORDER BY us.last_activity DESC, us.created_at DESC
+    </select>
+
+    <!-- 根据会话ID查询会话 -->
+    <select id="selectBySessionId" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.session_id = #{sessionId} 
+        AND us.is_active = 1
+    </select>
+
+    <!-- 根据用户ID查询活跃会话 -->
+    <select id="selectActiveSessionsByUserId" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.user_id = #{userId} 
+        AND us.is_active = 1 
+        AND us.expires_at &gt; NOW()
+        ORDER BY us.last_activity DESC
+    </select>
+
+    <!-- 根据Token查询会话 -->
+    <select id="selectByToken" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.token = #{token} 
+        AND us.is_active = 1 
+        AND us.expires_at &gt; NOW()
+    </select>
+
+    <!-- 根据刷新令牌查询会话 -->
+    <select id="selectByRefreshToken" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.refresh_token = #{refreshToken} 
+        AND us.is_active = 1 
+        AND us.expires_at &gt; NOW()
+    </select>
+
+    <!-- 查询过期会话 -->
+    <select id="selectExpiredSessions" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.expires_at &lt;= NOW() 
+        AND us.is_active = 1
+        ORDER BY us.expires_at ASC
+    </select>
+
+    <!-- 查询指定设备类型的会话 -->
+    <select id="selectByUserIdAndDeviceType" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.user_id = #{userId} 
+        AND us.device_type = #{deviceType} 
+        AND us.is_active = 1
+        ORDER BY us.last_activity DESC
+    </select>
+
+    <!-- 查询长时间未活动的会话 -->
+    <select id="selectInactiveSessions" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.last_activity &lt; #{inactiveThreshold}
+        AND us.is_active = 1
+        ORDER BY us.last_activity ASC
+    </select>
+
+    <!-- 查询即将过期的会话 -->
+    <select id="selectExpiringSessionsoon" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.expires_at BETWEEN NOW() AND #{expirationThreshold}
+        AND us.is_active = 1
+        ORDER BY us.expires_at ASC
+    </select>
+
+    <!-- 查询指定IP地址的会话 -->
+    <select id="selectByIpAddress" resultMap="BaseResultMap">
+        <include refid="selectUserSessionWithUser" />
+        AND us.ip_address = #{ipAddress}
+        <if test="isActive != null">
+            AND us.is_active = #{isActive}
+        </if>
+        ORDER BY us.created_at DESC
+    </select>
+
+    <!-- 查询多设备登录用户 -->
+    <select id="selectMultiDeviceUsers" resultType="java.util.Map">
+        SELECT 
+            us.user_id,
+            u.email,
+            COUNT(DISTINCT us.device_type) as device_count,
+            COUNT(*) as session_count,
+            GROUP_CONCAT(DISTINCT us.device_type) as device_types
+        FROM user_sessions us
+        JOIN users u ON us.user_id = u.id
+        WHERE us.is_active = 1 
+        AND us.expires_at &gt; NOW()
+        AND us.deleted = 0
+        GROUP BY us.user_id, u.email
+        HAVING device_count > 1
+        ORDER BY session_count DESC
+    </select>
+
+    <!-- 更新会话活动时间 -->
+    <update id="updateLastActivity">
+        UPDATE user_sessions 
+        SET last_activity = #{lastActivity}, updated_at = NOW()
+        WHERE session_id = #{sessionId} AND deleted = 0
+    </update>
+
+    <!-- 更新会话过期时间 -->
+    <update id="updateExpiresAt">
+        UPDATE user_sessions 
+        SET expires_at = #{expiresAt}, updated_at = NOW()
+        WHERE session_id = #{sessionId} AND deleted = 0
+    </update>
+
+    <!-- 更新刷新令牌 -->
+    <update id="updateRefreshToken">
+        UPDATE user_sessions 
+        SET refresh_token = #{refreshToken}, 
+            expires_at = #{expiresAt},
+            updated_at = NOW()
+        WHERE session_id = #{sessionId} AND deleted = 0
+    </update>
+
+    <!-- 禁用用户所有会话 -->
+    <update id="disableAllUserSessions">
+        UPDATE user_sessions 
+        SET is_active = 0, updated_at = NOW()
+        WHERE user_id = #{userId} AND deleted = 0
+    </update>
+
+    <!-- 禁用指定会话 -->
+    <update id="disableSession">
+        UPDATE user_sessions 
+        SET is_active = 0, updated_at = NOW()
+        WHERE session_id = #{sessionId} AND deleted = 0
+    </update>
+
+    <!-- 批量禁用会话 -->
+    <update id="batchDisableSessions">
+        UPDATE user_sessions 
+        SET is_active = 0, updated_at = NOW()
+        WHERE session_id IN
+        <foreach collection="sessionIds" item="sessionId" open="(" separator="," close=")">
+            #{sessionId}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 清理过期会话 -->
+    <update id="cleanupExpiredSessions">
+        UPDATE user_sessions 
+        SET is_active = 0, updated_at = NOW()
+        WHERE expires_at &lt;= NOW() 
+        AND is_active = 1 
+        AND deleted = 0
+    </update>
+
+    <!-- 清理长时间未活动的会话 -->
+    <update id="cleanupInactiveSessions">
+        UPDATE user_sessions 
+        SET is_active = 0, updated_at = NOW()
+        WHERE last_activity &lt; #{inactiveThreshold}
+        AND is_active = 1 
+        AND deleted = 0
+    </update>
+
+    <!-- 统计会话数量 -->
+    <select id="countSessions" resultType="java.lang.Long">
+        SELECT COUNT(*) 
+        FROM user_sessions us
+        LEFT JOIN users u ON us.user_id = u.id
+        WHERE us.deleted = 0
+        <include refid="whereConditions" />
+    </select>
+
+    <!-- 统计活跃会话数量 -->
+    <select id="countActiveSessions" resultType="java.lang.Long">
+        SELECT COUNT(*) 
+        FROM user_sessions 
+        WHERE is_active = 1 
+        AND expires_at &gt; NOW()
+        AND deleted = 0
+    </select>
+
+    <!-- 统计按设备类型分组的会话数量 -->
+    <select id="countByDeviceType" resultType="java.util.Map">
+        SELECT us.device_type, COUNT(*) as count
+        FROM user_sessions us 
+        WHERE us.deleted = 0
+        <if test="isActive != null">
+            AND us.is_active = #{isActive}
+        </if>
+        <if test="startTime != null">
+            AND us.created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND us.created_at &lt;= #{endTime}
+        </if>
+        GROUP BY us.device_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计每日登录会话数 -->
+    <select id="countByDate" resultType="java.util.Map">
+        SELECT DATE(us.created_at) as date, COUNT(*) as count
+        FROM user_sessions us 
+        WHERE us.deleted = 0
+        AND us.created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE(us.created_at)
+        ORDER BY date DESC
+    </select>
+
+    <!-- 统计每小时登录会话数 -->
+    <select id="countByHour" resultType="java.util.Map">
+        SELECT HOUR(us.created_at) as hour, COUNT(*) as count
+        FROM user_sessions us 
+        WHERE us.deleted = 0
+        AND DATE(us.created_at) = #{date}
+        GROUP BY HOUR(us.created_at)
+        ORDER BY hour ASC
+    </select>
+
+    <!-- 查询会话时长统计 -->
+    <select id="getSessionDurationStats" resultType="java.util.Map">
+        SELECT 
+            us.device_type,
+            COUNT(*) as session_count,
+            AVG(TIMESTAMPDIFF(MINUTE, us.created_at, COALESCE(us.last_activity, us.expires_at))) as avg_duration_minutes,
+            MIN(TIMESTAMPDIFF(MINUTE, us.created_at, COALESCE(us.last_activity, us.expires_at))) as min_duration_minutes,
+            MAX(TIMESTAMPDIFF(MINUTE, us.created_at, COALESCE(us.last_activity, us.expires_at))) as max_duration_minutes
+        FROM user_sessions us 
+        WHERE us.deleted = 0
+        AND us.is_active = 0
+        <if test="startTime != null">
+            AND us.created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND us.created_at &lt;= #{endTime}
+        </if>
+        GROUP BY us.device_type
+    </select>
+
+    <!-- 查询用户会话概览 -->
+    <select id="getUserSessionSummary" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total_sessions,
+            COUNT(CASE WHEN us.is_active = 1 THEN 1 END) as active_sessions,
+            COUNT(DISTINCT us.device_type) as device_types,
+            COUNT(DISTINCT us.ip_address) as unique_ips,
+            MAX(us.last_activity) as last_activity,
+            MIN(us.created_at) as first_session
+        FROM user_sessions us 
+        WHERE us.user_id = #{userId} 
+        AND us.deleted = 0
+        <if test="since != null">
+            AND us.created_at >= #{since}
+        </if>
+    </select>
+
+    <!-- 查询IP地址统计 -->
+    <select id="getIpAddressStats" resultType="java.util.Map">
+        SELECT 
+            us.ip_address,
+            COUNT(*) as session_count,
+            COUNT(DISTINCT us.user_id) as user_count,
+            COUNT(CASE WHEN us.is_active = 1 THEN 1 END) as active_count,
+            MIN(us.created_at) as first_session,
+            MAX(us.last_activity) as last_activity
+        FROM user_sessions us 
+        WHERE us.deleted = 0
+        <if test="startTime != null">
+            AND us.created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND us.created_at &lt;= #{endTime}
+        </if>
+        GROUP BY us.ip_address
+        HAVING session_count >= #{minSessionCount}
+        ORDER BY session_count DESC
+    </select>
+
+    <!-- 批量软删除会话记录 -->
+    <update id="batchDelete">
+        UPDATE user_sessions 
+        SET deleted = 1, updated_at = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 清理过期的会话记录 -->
+    <update id="cleanupExpiredSessionRecords">
+        UPDATE user_sessions 
+        SET deleted = 1, updated_at = NOW()
+        WHERE expires_at &lt; #{expiredDate}
+        AND is_active = 0
+        AND deleted = 0
+    </update>
+
+    <!-- 物理删除过期会话记录 -->
+    <delete id="deleteExpiredSessionRecords">
+        DELETE FROM user_sessions 
+        WHERE expires_at &lt; #{expiredDate}
+        AND is_active = 0
+        AND deleted = 1
+    </delete>
+
+</mapper>

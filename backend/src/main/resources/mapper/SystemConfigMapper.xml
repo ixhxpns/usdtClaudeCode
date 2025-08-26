@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.usdttrading.repository.SystemConfigMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.usdttrading.entity.SystemConfig">
+        <id column="id" property="id" />
+        <result column="config_key" property="configKey" />
+        <result column="config_value" property="configValue" />
+        <result column="data_type" property="dataType" />
+        <result column="category" property="category" />
+        <result column="description" property="description" />
+        <result column="is_public" property="isPublic" />
+        <result column="is_active" property="isActive" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询SQL片段 -->
+    <sql id="selectSystemConfig">
+        SELECT sc.*
+        FROM system_config sc 
+        WHERE sc.deleted = 0
+    </sql>
+
+    <!-- 查询条件SQL片段 -->
+    <sql id="whereConditions">
+        <where>
+            <if test="configKey != null and configKey != ''">
+                AND sc.config_key = #{configKey}
+            </if>
+            <if test="configKeyLike != null and configKeyLike != ''">
+                AND sc.config_key LIKE CONCAT('%', #{configKeyLike}, '%')
+            </if>
+            <if test="category != null and category != ''">
+                AND sc.category = #{category}
+            </if>
+            <if test="dataType != null and dataType != ''">
+                AND sc.data_type = #{dataType}
+            </if>
+            <if test="isPublic != null">
+                AND sc.is_public = #{isPublic}
+            </if>
+            <if test="isActive != null">
+                AND sc.is_active = #{isActive}
+            </if>
+            <if test="description != null and description != ''">
+                AND sc.description LIKE CONCAT('%', #{description}, '%')
+            </if>
+        </where>
+    </sql>
+
+    <!-- 根据ID查询系统配置 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND sc.id = #{id}
+    </select>
+
+    <!-- 分页查询系统配置列表 -->
+    <select id="selectSystemConfigList" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        <include refid="whereConditions" />
+        ORDER BY sc.category ASC, sc.config_key ASC
+    </select>
+
+    <!-- 根据配置键查找配置 -->
+    <select id="findByConfigKey" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND sc.config_key = #{configKey}
+    </select>
+
+    <!-- 获取公开配置 -->
+    <select id="findPublicConfigs" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND sc.is_public = 1 
+        AND sc.is_active = 1
+        ORDER BY sc.category ASC, sc.config_key ASC
+    </select>
+
+    <!-- 根据分类获取配置 -->
+    <select id="findByCategory" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND sc.category = #{category} 
+        AND sc.is_active = 1
+        ORDER BY sc.config_key ASC
+    </select>
+
+    <!-- 获取所有激活的配置 -->
+    <select id="findActiveConfigs" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND sc.is_active = 1
+        ORDER BY sc.category ASC, sc.config_key ASC
+    </select>
+
+    <!-- 根据数据类型查询配置 -->
+    <select id="findByDataType" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND sc.data_type = #{dataType}
+        AND sc.is_active = 1
+        ORDER BY sc.category ASC, sc.config_key ASC
+    </select>
+
+    <!-- 查询私有配置 -->
+    <select id="findPrivateConfigs" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND sc.is_public = 0 
+        AND sc.is_active = 1
+        ORDER BY sc.category ASC, sc.config_key ASC
+    </select>
+
+    <!-- 根据配置键模糊查询 -->
+    <select id="findByConfigKeyLike" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND sc.config_key LIKE CONCAT('%', #{keyword}, '%')
+        AND sc.is_active = 1
+        ORDER BY sc.category ASC, sc.config_key ASC
+    </select>
+
+    <!-- 查询配置值包含指定文本的配置 -->
+    <select id="findByConfigValueContains" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND sc.config_value LIKE CONCAT('%', #{value}, '%')
+        AND sc.is_active = 1
+        ORDER BY sc.category ASC, sc.config_key ASC
+    </select>
+
+    <!-- 查询空配置值的配置项 -->
+    <select id="findEmptyConfigs" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        AND (sc.config_value IS NULL OR sc.config_value = '')
+        ORDER BY sc.category ASC, sc.config_key ASC
+    </select>
+
+    <!-- 更新配置值 -->
+    <update id="updateConfigValue">
+        UPDATE system_config 
+        SET config_value = #{configValue}, updated_at = NOW()
+        WHERE config_key = #{configKey} AND deleted = 0
+    </update>
+
+    <!-- 批量更新配置值 -->
+    <update id="batchUpdateConfigValues">
+        <foreach collection="configs" item="config" separator=";">
+            UPDATE system_config 
+            SET config_value = #{config.configValue}, updated_at = NOW()
+            WHERE config_key = #{config.configKey} AND deleted = 0
+        </foreach>
+    </update>
+
+    <!-- 启用/禁用配置 -->
+    <update id="updateConfigStatus">
+        UPDATE system_config 
+        SET is_active = #{isActive}, updated_at = NOW()
+        WHERE config_key = #{configKey} AND deleted = 0
+    </update>
+
+    <!-- 批量启用/禁用配置 -->
+    <update id="batchUpdateStatus">
+        UPDATE system_config 
+        SET is_active = #{isActive}, updated_at = NOW()
+        WHERE config_key IN
+        <foreach collection="configKeys" item="key" open="(" separator="," close=")">
+            #{key}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 更新配置公开状态 -->
+    <update id="updatePublicStatus">
+        UPDATE system_config 
+        SET is_public = #{isPublic}, updated_at = NOW()
+        WHERE config_key = #{configKey} AND deleted = 0
+    </update>
+
+    <!-- 统计配置数量 -->
+    <select id="countConfigs" resultType="java.lang.Long">
+        SELECT COUNT(*) 
+        FROM system_config sc 
+        WHERE sc.deleted = 0
+        <include refid="whereConditions" />
+    </select>
+
+    <!-- 统计按分类分组的配置数量 -->
+    <select id="countByCategory" resultType="java.util.Map">
+        SELECT sc.category, COUNT(*) as count
+        FROM system_config sc 
+        WHERE sc.deleted = 0
+        <if test="isActive != null">
+            AND sc.is_active = #{isActive}
+        </if>
+        GROUP BY sc.category
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计按数据类型分组的配置数量 -->
+    <select id="countByDataType" resultType="java.util.Map">
+        SELECT sc.data_type, COUNT(*) as count
+        FROM system_config sc 
+        WHERE sc.deleted = 0
+        <if test="isActive != null">
+            AND sc.is_active = #{isActive}
+        </if>
+        GROUP BY sc.data_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 查询配置概览统计 -->
+    <select id="getConfigSummary" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total_count,
+            COUNT(CASE WHEN sc.is_active = 1 THEN 1 END) as active_count,
+            COUNT(CASE WHEN sc.is_public = 1 THEN 1 END) as public_count,
+            COUNT(CASE WHEN sc.config_value IS NULL OR sc.config_value = '' THEN 1 END) as empty_count,
+            COUNT(DISTINCT sc.category) as category_count,
+            COUNT(DISTINCT sc.data_type) as data_type_count
+        FROM system_config sc 
+        WHERE sc.deleted = 0
+    </select>
+
+    <!-- 查询配置变更历史（最近更新的配置） -->
+    <select id="getRecentlyUpdatedConfigs" resultMap="BaseResultMap">
+        <include refid="selectSystemConfig" />
+        ORDER BY sc.updated_at DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 导出配置数据 -->
+    <select id="exportConfigs" resultType="java.util.Map">
+        SELECT 
+            sc.config_key,
+            sc.config_value,
+            sc.data_type,
+            sc.category,
+            sc.description,
+            sc.is_public,
+            sc.is_active
+        FROM system_config sc 
+        WHERE sc.deleted = 0
+        <if test="category != null and category != ''">
+            AND sc.category = #{category}
+        </if>
+        <if test="isActive != null">
+            AND sc.is_active = #{isActive}
+        </if>
+        ORDER BY sc.category ASC, sc.config_key ASC
+    </select>
+
+    <!-- 检查配置键是否存在 -->
+    <select id="existsByConfigKey" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0 
+        FROM system_config 
+        WHERE config_key = #{configKey} 
+        AND deleted = 0
+    </select>
+
+    <!-- 查找重复的配置键 -->
+    <select id="findDuplicateKeys" resultType="java.lang.String">
+        SELECT config_key 
+        FROM system_config 
+        WHERE deleted = 0
+        GROUP BY config_key 
+        HAVING COUNT(*) > 1
+    </select>
+
+    <!-- 批量软删除配置 -->
+    <update id="batchDelete">
+        UPDATE system_config 
+        SET deleted = 1, updated_at = NOW()
+        WHERE config_key IN
+        <foreach collection="configKeys" item="key" open="(" separator="," close=")">
+            #{key}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 恢复已删除的配置 -->
+    <update id="restoreConfig">
+        UPDATE system_config 
+        SET deleted = 0, updated_at = NOW()
+        WHERE config_key = #{configKey} AND deleted = 1
+    </update>
+
+    <!-- 批量插入配置 -->
+    <insert id="batchInsert">
+        INSERT INTO system_config (
+            config_key, config_value, data_type, category, description, 
+            is_public, is_active, created_at, updated_at
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.configKey}, #{item.configValue}, #{item.dataType}, #{item.category}, #{item.description},
+                #{item.isPublic}, #{item.isActive}, NOW(), NOW()
+            )
+        </foreach>
+    </insert>
+
+    <!-- 清理配置缓存相关的查询（用于缓存刷新） -->
+    <select id="getAllConfigKeys" resultType="java.lang.String">
+        SELECT config_key 
+        FROM system_config 
+        WHERE deleted = 0 
+        AND is_active = 1
+    </select>
+
+    <!-- 查询配置依赖关系（如果有配置项之间有依赖） -->
+    <select id="findConfigDependencies" resultType="java.util.Map">
+        SELECT 
+            sc.config_key,
+            sc.config_value,
+            sc.category
+        FROM system_config sc 
+        WHERE sc.config_value LIKE CONCAT('%', #{dependencyKey}, '%')
+        AND sc.deleted = 0
+        AND sc.is_active = 1
+    </select>
+
+</mapper>

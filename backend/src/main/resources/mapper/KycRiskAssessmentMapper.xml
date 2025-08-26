@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usdttrading.repository.KycRiskAssessmentMapper">
+
+    <!-- 風險等級統計 -->
+    <select id="selectRiskLevelStatistics" resultType="map">
+        SELECT 
+            risk_level,
+            COUNT(*) as count,
+            AVG(risk_score) as avg_risk_score
+        FROM kyc_risk_assessments 
+        WHERE assessed_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY risk_level
+        ORDER BY risk_level ASC
+    </select>
+
+    <!-- 分頁查詢風險評估 -->
+    <select id="selectRiskAssessmentsPage" resultType="com.usdttrading.entity.KycRiskAssessment">
+        SELECT * FROM kyc_risk_assessments
+        WHERE 1=1
+        <if test="userId != null">
+            AND user_id = #{userId}
+        </if>
+        <if test="riskLevelMin != null">
+            AND risk_level >= #{riskLevelMin}
+        </if>
+        <if test="riskLevelMax != null">
+            AND risk_level &lt;= #{riskLevelMax}
+        </if>
+        ORDER BY assessed_at DESC
+    </select>
+
+</mapper>
