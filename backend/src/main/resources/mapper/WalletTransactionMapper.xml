@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.usdttrading.repository.WalletTransactionMapper">
+    
+    <!-- 基础结果映射 -->
+    <resultMap id="BaseResultMap" type="com.usdttrading.entity.WalletTransaction">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="wallet_id" property="walletId" jdbcType="BIGINT"/>
+        <result column="transaction_hash" property="transactionHash" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="fee" property="fee" jdbcType="DECIMAL"/>
+        <result column="balance_before" property="balanceBefore" jdbcType="DECIMAL"/>
+        <result column="balance_after" property="balanceAfter" jdbcType="DECIMAL"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="block_number" property="blockNumber" jdbcType="BIGINT"/>
+        <result column="confirmations" property="confirmations" jdbcType="INTEGER"/>
+        <result column="from_address" property="fromAddress" jdbcType="VARCHAR"/>
+        <result column="to_address" property="toAddress" jdbcType="VARCHAR"/>
+        <result column="memo" property="memo" jdbcType="VARCHAR"/>
+        <result column="error_message" property="errorMessage" jdbcType="LONGVARCHAR"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+        <result column="deleted" property="deleted" jdbcType="INTEGER"/>
+        <result column="version" property="version" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础列列表 -->
+    <sql id="Base_Column_List">
+        id, wallet_id, transaction_hash, type, amount, fee, balance_before, balance_after,
+        status, block_number, confirmations, from_address, to_address, memo, error_message,
+        created_at, updated_at, deleted, version
+    </sql>
+
+    <!-- 根据钱包ID和交易类型统计金额 -->
+    <select id="sumAmountByWalletIdAndTypes" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(amount), 0)
+        FROM wallet_transactions 
+        WHERE wallet_id = #{walletId} AND status = 'completed'
+        AND type IN
+        <foreach collection="types" item="type" open="(" separator="," close=")">
+            #{type}
+        </foreach>
+        AND deleted = 0
+    </select>
+
+    <!-- 查询钱包日交易统计 -->
+    <select id="selectDailyStats" resultType="java.util.Map">
+        SELECT 
+            DATE(created_at) as trade_date,
+            COUNT(*) as transaction_count,
+            SUM(CASE WHEN type IN ('deposit', 'transfer_in', 'reward') THEN amount ELSE 0 END) as total_income,
+            SUM(CASE WHEN type IN ('withdrawal', 'transfer_out', 'fee') THEN amount ELSE 0 END) as total_expense
+        FROM wallet_transactions
+        WHERE wallet_id = #{walletId} 
+        AND status = 'completed'
+        AND created_at BETWEEN #{startDate} AND #{endDate}
+        AND deleted = 0
+        GROUP BY DATE(created_at)
+        ORDER BY trade_date DESC
+    </select>
+
+    <!-- 根据区块号范围查询交易 -->
+    <select id="selectByBlockRange" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List"/>
+        FROM wallet_transactions
+        WHERE block_number BETWEEN #{startBlock} AND #{endBlock}
+        AND block_number IS NOT NULL
+        AND deleted = 0
+        ORDER BY block_number ASC
+    </select>
+
+    <!-- 查询异常交易 -->
+    <select id="selectAbnormalTransactions" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List"/>
+        FROM wallet_transactions
+        WHERE (status = 'failed' OR error_message IS NOT NULL)
+        AND created_at BETWEEN #{startTime} AND #{endTime}
+        AND deleted = 0
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>

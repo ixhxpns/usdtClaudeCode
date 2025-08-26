@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usdttrading.repository.OrderMapper">
+
+    <!-- 根据用户ID分页查找订单 -->
+    <select id="findByUserId" resultType="com.usdttrading.entity.Order">
+        SELECT * FROM orders 
+        WHERE user_id = #{userId} AND deleted = 0 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 根据类型和状态查找订单 -->
+    <select id="findByTypeAndStatus" resultType="com.usdttrading.entity.Order">
+        SELECT * FROM orders 
+        WHERE deleted = 0
+        <if test="type != null and type != ''">
+            AND type = #{type}
+        </if>
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 获取用户的订单统计 -->
+    <select id="getUserOrderStatistics" resultType="com.usdttrading.repository.OrderMapper$OrderStatistics">
+        SELECT 
+            COUNT(*) as totalOrders,
+            COUNT(CASE WHEN status = 'completed' THEN 1 END) as completedOrders,
+            COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelledOrders,
+            COALESCE(SUM(total_amount), 0) as totalAmount,
+            COALESCE(SUM(CASE WHEN status = 'completed' THEN total_amount END), 0) as completedAmount
+        FROM orders 
+        WHERE user_id = #{userId} AND deleted = 0
+        <if test="startTime != null">
+            AND created_at &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at &lt;= #{endTime}
+        </if>
+    </select>
+
+    <!-- 获取指定时间范围内的订单 -->
+    <select id="findOrdersByDateRange" resultType="com.usdttrading.entity.Order">
+        SELECT * FROM orders 
+        WHERE deleted = 0
+        <if test="startTime != null">
+            AND created_at &gt;= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND created_at &lt;= #{endTime}
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>

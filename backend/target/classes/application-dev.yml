@@ -1,0 +1,53 @@
+# 开发环境配置
+server:
+  port: 8080
+
+spring:
+  # 数据库配置 - 临时使用H2内存数据库测试
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
+
+# 区块链配置 - 开发环境使用测试网
+blockchain:
+  tron:
+    use-testnet: true
+    platform-wallet-address: TYour-Test-Wallet-Address-Here
+    platform-wallet-private-key: your-test-private-key-here
+    fee-wallet-address: TYour-Test-Fee-Wallet-Address-Here
+    fee-wallet-private-key: your-test-fee-private-key-here
+
+# 日志配置 - 开发环境详细日志
+logging:
+  level:
+    root: info
+    com.usdttrading: debug
+    org.springframework.security: debug
+    org.mybatis: debug
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
+
+# 业务配置 - 开发环境宽松限制
+business:
+  trading:
+    min-trade-amount: 1
+    max-trade-amount: 100000
+    withdrawal-fee: 1
+    auto-approval-limit: 10000
+  security:
+    max-login-attempts: 10
+    account-lock-minutes: 5

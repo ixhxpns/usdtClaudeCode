@@ -1,0 +1,236 @@
+2025-08-23T10:28:55.876671Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+2025-08-23T10:28:55.876722Z 0 [Warning] [MY-011070] [Server] 'binlog_format' is deprecated and will be removed in a future release.
+2025-08-23T10:28:55.876726Z 0 [Warning] [MY-011068] [Server] The syntax 'expire-logs-days' is deprecated and will be removed in a future release. Please use binlog_expire_logs_seconds instead.
+2025-08-23T10:28:55.876818Z 0 [System] [MY-013169] [Server] /usr/sbin/mysqld (mysqld 8.0.35) initializing of server in progress as process 80
+2025-08-23T10:28:55.926209Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+2025-08-23T10:28:55.933494Z 0 [Warning] [MY-013907] [InnoDB] Deprecated configuration parameters innodb_log_file_size and/or innodb_log_files_in_group have been used to compute innodb_redo_log_capacity=536870912. Please use innodb_redo_log_capacity instead.
+2025-08-23T10:28:55.935919Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2025-08-23T10:28:56.396341Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2025-08-23T10:28:57.295824Z 0 [ERROR] [MY-000067] [Server] unknown variable 'query_cache_type=1'.
+2025-08-23T10:28:57.295880Z 0 [ERROR] [MY-013236] [Server] The designated data directory /var/lib/mysql/ is unusable. You can remove all files that the server added to it.
+2025-08-23T10:28:57.295910Z 0 [ERROR] [MY-010119] [Server] Aborting
+2025-08-23T10:28:58.735563Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
+2025-08-23T10:28:59.593082Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+2025-08-23T10:28:59.593137Z 0 [Warning] [MY-011070] [Server] 'binlog_format' is deprecated and will be removed in a future release.
+2025-08-23T10:28:59.593147Z 0 [Warning] [MY-011068] [Server] The syntax 'expire-logs-days' is deprecated and will be removed in a future release. Please use binlog_expire_logs_seconds instead.
+2025-08-23T10:28:59.596999Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 1
+2025-08-23T10:28:59.598764Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+2025-08-23T10:28:59.612578Z 0 [Warning] [MY-013907] [InnoDB] Deprecated configuration parameters innodb_log_file_size and/or innodb_log_files_in_group have been used to compute innodb_redo_log_capacity=536870912. Please use innodb_redo_log_capacity instead.
+2025-08-23T10:28:59.613917Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2025-08-23T10:28:59.770930Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+mysqld: Table 'mysql.plugin' doesn't exist
+2025-08-23T10:28:59.830321Z 0 [ERROR] [MY-010735] [Server] Could not open the mysql.plugin table. Please perform the MySQL upgrade procedure.
+2025-08-23T10:28:59.830558Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:28:59.830722Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:28:59.830853Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:28:59.831017Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:28:59.831125Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:28:59.831266Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:28:59.831377Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:28:59.860074Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:28:59.919472Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:28:59.921104Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2025-08-23T10:28:59.921213Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2025-08-23T10:28:59.923199Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2025-08-23T10:28:59.923427Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:28:59.923602Z 0 [ERROR] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-001146 - Table 'mysql.component' doesn't exist
+2025-08-23T10:28:59.923675Z 0 [Warning] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-003543 - The mysql.component table is missing or has an incorrect definition.
+2025-08-23T10:28:59.923783Z 0 [ERROR] [MY-000067] [Server] unknown variable 'query_cache_type=1'.
+2025-08-23T10:28:59.923873Z 0 [ERROR] [MY-010119] [Server] Aborting
+2025-08-23T10:29:01.372750Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
+2025-08-23T10:29:02.186625Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+2025-08-23T10:29:02.186663Z 0 [Warning] [MY-011070] [Server] 'binlog_format' is deprecated and will be removed in a future release.
+2025-08-23T10:29:02.186668Z 0 [Warning] [MY-011068] [Server] The syntax 'expire-logs-days' is deprecated and will be removed in a future release. Please use binlog_expire_logs_seconds instead.
+2025-08-23T10:29:02.188111Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 1
+2025-08-23T10:29:02.189700Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+2025-08-23T10:29:02.198635Z 0 [Warning] [MY-013907] [InnoDB] Deprecated configuration parameters innodb_log_file_size and/or innodb_log_files_in_group have been used to compute innodb_redo_log_capacity=536870912. Please use innodb_redo_log_capacity instead.
+2025-08-23T10:29:02.200013Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2025-08-23T10:29:02.329193Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+mysqld: Table 'mysql.plugin' doesn't exist
+2025-08-23T10:29:02.399021Z 0 [ERROR] [MY-010735] [Server] Could not open the mysql.plugin table. Please perform the MySQL upgrade procedure.
+2025-08-23T10:29:02.399323Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:02.399501Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:02.399694Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:02.399921Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:02.400089Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:02.400251Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:02.400378Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:02.420382Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:02.479619Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:02.480992Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2025-08-23T10:29:02.481078Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2025-08-23T10:29:02.482603Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2025-08-23T10:29:02.482779Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:02.482886Z 0 [ERROR] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-001146 - Table 'mysql.component' doesn't exist
+2025-08-23T10:29:02.482922Z 0 [Warning] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-003543 - The mysql.component table is missing or has an incorrect definition.
+2025-08-23T10:29:02.482989Z 0 [ERROR] [MY-000067] [Server] unknown variable 'query_cache_type=1'.
+2025-08-23T10:29:02.483050Z 0 [ERROR] [MY-010119] [Server] Aborting
+2025-08-23T10:29:04.050493Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
+2025-08-23T10:29:05.041800Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+2025-08-23T10:29:05.041838Z 0 [Warning] [MY-011070] [Server] 'binlog_format' is deprecated and will be removed in a future release.
+2025-08-23T10:29:05.041843Z 0 [Warning] [MY-011068] [Server] The syntax 'expire-logs-days' is deprecated and will be removed in a future release. Please use binlog_expire_logs_seconds instead.
+2025-08-23T10:29:05.043274Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 1
+2025-08-23T10:29:05.044845Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+2025-08-23T10:29:05.053163Z 0 [Warning] [MY-013907] [InnoDB] Deprecated configuration parameters innodb_log_file_size and/or innodb_log_files_in_group have been used to compute innodb_redo_log_capacity=536870912. Please use innodb_redo_log_capacity instead.
+2025-08-23T10:29:05.054470Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2025-08-23T10:29:05.172400Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+mysqld: Table 'mysql.plugin' doesn't exist
+2025-08-23T10:29:05.227191Z 0 [ERROR] [MY-010735] [Server] Could not open the mysql.plugin table. Please perform the MySQL upgrade procedure.
+2025-08-23T10:29:05.227332Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:05.227427Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:05.227555Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:05.227699Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:05.227777Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:05.227854Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:05.227936Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:05.244909Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:05.253802Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:05.255776Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2025-08-23T10:29:05.255874Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2025-08-23T10:29:05.257773Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2025-08-23T10:29:05.257996Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:05.258118Z 0 [ERROR] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-001146 - Table 'mysql.component' doesn't exist
+2025-08-23T10:29:05.258162Z 0 [Warning] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-003543 - The mysql.component table is missing or has an incorrect definition.
+2025-08-23T10:29:05.258264Z 0 [ERROR] [MY-000067] [Server] unknown variable 'query_cache_type=1'.
+2025-08-23T10:29:05.258349Z 0 [ERROR] [MY-010119] [Server] Aborting
+2025-08-23T10:29:06.793367Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
+2025-08-23T10:29:08.242353Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+2025-08-23T10:29:08.242391Z 0 [Warning] [MY-011070] [Server] 'binlog_format' is deprecated and will be removed in a future release.
+2025-08-23T10:29:08.242396Z 0 [Warning] [MY-011068] [Server] The syntax 'expire-logs-days' is deprecated and will be removed in a future release. Please use binlog_expire_logs_seconds instead.
+2025-08-23T10:29:08.243739Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 1
+2025-08-23T10:29:08.245375Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+2025-08-23T10:29:08.254002Z 0 [Warning] [MY-013907] [InnoDB] Deprecated configuration parameters innodb_log_file_size and/or innodb_log_files_in_group have been used to compute innodb_redo_log_capacity=536870912. Please use innodb_redo_log_capacity instead.
+2025-08-23T10:29:08.255715Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2025-08-23T10:29:08.368872Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+mysqld: Table 'mysql.plugin' doesn't exist
+2025-08-23T10:29:08.422010Z 0 [ERROR] [MY-010735] [Server] Could not open the mysql.plugin table. Please perform the MySQL upgrade procedure.
+2025-08-23T10:29:08.422188Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:08.422348Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:08.422505Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:08.422687Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:08.422774Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:08.422853Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:08.422928Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:08.441849Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:08.501767Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:08.503151Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2025-08-23T10:29:08.503211Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2025-08-23T10:29:08.504922Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2025-08-23T10:29:08.505085Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:08.505201Z 0 [ERROR] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-001146 - Table 'mysql.component' doesn't exist
+2025-08-23T10:29:08.505235Z 0 [Warning] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-003543 - The mysql.component table is missing or has an incorrect definition.
+2025-08-23T10:29:08.505299Z 0 [ERROR] [MY-000067] [Server] unknown variable 'query_cache_type=1'.
+2025-08-23T10:29:08.505353Z 0 [ERROR] [MY-010119] [Server] Aborting
+2025-08-23T10:29:10.071371Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
+2025-08-23T10:29:12.285110Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+2025-08-23T10:29:12.285149Z 0 [Warning] [MY-011070] [Server] 'binlog_format' is deprecated and will be removed in a future release.
+2025-08-23T10:29:12.285156Z 0 [Warning] [MY-011068] [Server] The syntax 'expire-logs-days' is deprecated and will be removed in a future release. Please use binlog_expire_logs_seconds instead.
+2025-08-23T10:29:12.286573Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 1
+2025-08-23T10:29:12.288299Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+2025-08-23T10:29:12.297108Z 0 [Warning] [MY-013907] [InnoDB] Deprecated configuration parameters innodb_log_file_size and/or innodb_log_files_in_group have been used to compute innodb_redo_log_capacity=536870912. Please use innodb_redo_log_capacity instead.
+2025-08-23T10:29:12.298697Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2025-08-23T10:29:12.439373Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+mysqld: Table 'mysql.plugin' doesn't exist
+2025-08-23T10:29:12.489657Z 0 [ERROR] [MY-010735] [Server] Could not open the mysql.plugin table. Please perform the MySQL upgrade procedure.
+2025-08-23T10:29:12.489932Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:12.490146Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:12.490320Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:12.490505Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:12.490599Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:12.490770Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:12.490946Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:12.509330Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:12.569153Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:12.570661Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2025-08-23T10:29:12.570737Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2025-08-23T10:29:12.572277Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2025-08-23T10:29:12.572482Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:12.572587Z 0 [ERROR] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-001146 - Table 'mysql.component' doesn't exist
+2025-08-23T10:29:12.572628Z 0 [Warning] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-003543 - The mysql.component table is missing or has an incorrect definition.
+2025-08-23T10:29:12.572700Z 0 [ERROR] [MY-000067] [Server] unknown variable 'query_cache_type=1'.
+2025-08-23T10:29:12.572759Z 0 [ERROR] [MY-010119] [Server] Aborting
+2025-08-23T10:29:14.141312Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
+2025-08-23T10:29:17.963091Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+2025-08-23T10:29:17.963131Z 0 [Warning] [MY-011070] [Server] 'binlog_format' is deprecated and will be removed in a future release.
+2025-08-23T10:29:17.963136Z 0 [Warning] [MY-011068] [Server] The syntax 'expire-logs-days' is deprecated and will be removed in a future release. Please use binlog_expire_logs_seconds instead.
+2025-08-23T10:29:17.964523Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 1
+2025-08-23T10:29:17.966041Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+2025-08-23T10:29:17.974288Z 0 [Warning] [MY-013907] [InnoDB] Deprecated configuration parameters innodb_log_file_size and/or innodb_log_files_in_group have been used to compute innodb_redo_log_capacity=536870912. Please use innodb_redo_log_capacity instead.
+2025-08-23T10:29:17.975724Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2025-08-23T10:29:18.103809Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+mysqld: Table 'mysql.plugin' doesn't exist
+2025-08-23T10:29:18.153464Z 0 [ERROR] [MY-010735] [Server] Could not open the mysql.plugin table. Please perform the MySQL upgrade procedure.
+2025-08-23T10:29:18.153635Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:18.153756Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:18.153879Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:18.154060Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:18.154181Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:18.154329Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:18.154443Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:18.172924Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:18.178648Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:18.180610Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2025-08-23T10:29:18.180749Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2025-08-23T10:29:18.182552Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2025-08-23T10:29:18.183126Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:18.183329Z 0 [ERROR] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-001146 - Table 'mysql.component' doesn't exist
+2025-08-23T10:29:18.183381Z 0 [Warning] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-003543 - The mysql.component table is missing or has an incorrect definition.
+2025-08-23T10:29:18.183483Z 0 [ERROR] [MY-000067] [Server] unknown variable 'query_cache_type=1'.
+2025-08-23T10:29:18.183559Z 0 [ERROR] [MY-010119] [Server] Aborting
+2025-08-23T10:29:19.746070Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
+2025-08-23T10:29:26.753127Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+2025-08-23T10:29:26.753166Z 0 [Warning] [MY-011070] [Server] 'binlog_format' is deprecated and will be removed in a future release.
+2025-08-23T10:29:26.753171Z 0 [Warning] [MY-011068] [Server] The syntax 'expire-logs-days' is deprecated and will be removed in a future release. Please use binlog_expire_logs_seconds instead.
+2025-08-23T10:29:26.754723Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 1
+2025-08-23T10:29:26.756462Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+2025-08-23T10:29:26.766541Z 0 [Warning] [MY-013907] [InnoDB] Deprecated configuration parameters innodb_log_file_size and/or innodb_log_files_in_group have been used to compute innodb_redo_log_capacity=536870912. Please use innodb_redo_log_capacity instead.
+2025-08-23T10:29:26.767889Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2025-08-23T10:29:26.889015Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+mysqld: Table 'mysql.plugin' doesn't exist
+2025-08-23T10:29:26.939238Z 0 [ERROR] [MY-010735] [Server] Could not open the mysql.plugin table. Please perform the MySQL upgrade procedure.
+2025-08-23T10:29:26.939367Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:26.939456Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:26.939549Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:26.939666Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:26.939739Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:26.939813Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:26.939884Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:26.956261Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:27.015779Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:27.017005Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2025-08-23T10:29:27.017059Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2025-08-23T10:29:27.018568Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2025-08-23T10:29:27.018750Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:27.018857Z 0 [ERROR] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-001146 - Table 'mysql.component' doesn't exist
+2025-08-23T10:29:27.018894Z 0 [Warning] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-003543 - The mysql.component table is missing or has an incorrect definition.
+2025-08-23T10:29:27.018970Z 0 [ERROR] [MY-000067] [Server] unknown variable 'query_cache_type=1'.
+2025-08-23T10:29:27.019049Z 0 [ERROR] [MY-010119] [Server] Aborting
+2025-08-23T10:29:28.572168Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
+2025-08-23T10:29:42.033257Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+2025-08-23T10:29:42.033298Z 0 [Warning] [MY-011070] [Server] 'binlog_format' is deprecated and will be removed in a future release.
+2025-08-23T10:29:42.033303Z 0 [Warning] [MY-011068] [Server] The syntax 'expire-logs-days' is deprecated and will be removed in a future release. Please use binlog_expire_logs_seconds instead.
+2025-08-23T10:29:42.034599Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 1
+2025-08-23T10:29:42.036087Z 0 [Warning] [MY-010159] [Server] Setting lower_case_table_names=2 because file system for /var/lib/mysql/ is case insensitive
+2025-08-23T10:29:42.042982Z 0 [Warning] [MY-013907] [InnoDB] Deprecated configuration parameters innodb_log_file_size and/or innodb_log_files_in_group have been used to compute innodb_redo_log_capacity=536870912. Please use innodb_redo_log_capacity instead.
+2025-08-23T10:29:42.044444Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2025-08-23T10:29:42.164278Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+mysqld: Table 'mysql.plugin' doesn't exist
+2025-08-23T10:29:42.215026Z 0 [ERROR] [MY-010735] [Server] Could not open the mysql.plugin table. Please perform the MySQL upgrade procedure.
+2025-08-23T10:29:42.215184Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:42.215304Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:42.215403Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:42.216128Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:42.216287Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:42.216453Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:42.216544Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:42.234193Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:42.292899Z 0 [Warning] [MY-010015] [Repl] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+2025-08-23T10:29:42.294138Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2025-08-23T10:29:42.294197Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2025-08-23T10:29:42.295732Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2025-08-23T10:29:42.296186Z 0 [Warning] [MY-010441] [Server] Failed to open optimizer cost constant tables
+2025-08-23T10:29:42.296466Z 0 [ERROR] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-001146 - Table 'mysql.component' doesn't exist
+2025-08-23T10:29:42.296568Z 0 [Warning] [MY-013129] [Server] A message intended for a client cannot be sent there as no client-session is attached. Therefore, we're sending the information to the error-log instead: MY-003543 - The mysql.component table is missing or has an incorrect definition.
+2025-08-23T10:29:42.296712Z 0 [ERROR] [MY-000067] [Server] unknown variable 'query_cache_type=1'.
+2025-08-23T10:29:42.296814Z 0 [ERROR] [MY-010119] [Server] Aborting
+2025-08-23T10:29:43.860144Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.

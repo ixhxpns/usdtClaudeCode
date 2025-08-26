@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.usdttrading.repository.PriceHistoryMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.usdttrading.entity.PriceHistory">
+        <id column="id" property="id" />
+        <result column="currency_pair" property="currencyPair" />
+        <result column="price" property="price" />
+        <result column="volume" property="volume" />
+        <result column="high" property="high" />
+        <result column="low" property="low" />
+        <result column="open" property="open" />
+        <result column="close" property="close" />
+        <result column="source" property="source" />
+        <result column="interval_type" property="intervalType" />
+        <result column="timestamp" property="timestamp" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="deleted" property="deleted" />
+    </resultMap>
+
+    <!-- 通用查询SQL片段 -->
+    <sql id="selectPriceHistory">
+        SELECT ph.*
+        FROM price_history ph 
+        WHERE ph.deleted = 0
+    </sql>
+
+    <!-- 查询条件SQL片段 -->
+    <sql id="whereConditions">
+        <where>
+            <if test="currencyPair != null and currencyPair != ''">
+                AND ph.currency_pair = #{currencyPair}
+            </if>
+            <if test="source != null and source != ''">
+                AND ph.source = #{source}
+            </if>
+            <if test="intervalType != null and intervalType != ''">
+                AND ph.interval_type = #{intervalType}
+            </if>
+            <if test="minPrice != null">
+                AND ph.price >= #{minPrice}
+            </if>
+            <if test="maxPrice != null">
+                AND ph.price &lt;= #{maxPrice}
+            </if>
+            <if test="minVolume != null">
+                AND ph.volume >= #{minVolume}
+            </if>
+            <if test="maxVolume != null">
+                AND ph.volume &lt;= #{maxVolume}
+            </if>
+            <if test="startTime != null">
+                AND ph.timestamp >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND ph.timestamp &lt;= #{endTime}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 根据ID查询价格历史 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        <include refid="selectPriceHistory" />
+        AND ph.id = #{id}
+    </select>
+
+    <!-- 分页查询价格历史列表 -->
+    <select id="selectPriceHistoryList" resultMap="BaseResultMap">
+        <include refid="selectPriceHistory" />
+        <include refid="whereConditions" />
+        ORDER BY ph.timestamp DESC
+    </select>
+
+    <!-- 查询最新价格 -->
+    <select id="selectLatestPrice" resultMap="BaseResultMap">
+        <include refid="selectPriceHistory" />
+        AND ph.currency_pair = #{currencyPair}
+        ORDER BY ph.timestamp DESC
+        LIMIT 1
+    </select>
+
+    <!-- 查询指定时间范围的价格历史 -->
+    <select id="selectPriceHistory" resultMap="BaseResultMap">
+        <include refid="selectPriceHistory" />
+        AND ph.currency_pair = #{currencyPair} 
+        AND ph.timestamp BETWEEN #{startTime} AND #{endTime} 
+        AND ph.interval_type = #{intervalType}
+        ORDER BY ph.timestamp ASC
+    </select>
+
+    <!-- 获取24小时价格统计 -->
+    <select id="select24HourStats" resultMap="BaseResultMap">
+        SELECT 
+            #{currencyPair} as currency_pair,
+            MAX(ph.price) as high,
+            MIN(ph.price) as low,
+            (SELECT price FROM price_history WHERE currency_pair = #{currencyPair} AND timestamp >= #{startTime} AND deleted = 0 ORDER BY timestamp ASC LIMIT 1) as open,
+            (SELECT price FROM price_history WHERE currency_pair = #{currencyPair} AND timestamp >= #{startTime} AND deleted = 0 ORDER BY timestamp DESC LIMIT 1) as close,
+            SUM(ph.volume) as volume,
+            #{startTime} as timestamp
+        FROM price_history ph
+        WHERE ph.currency_pair = #{currencyPair} 
+        AND ph.timestamp >= #{startTime}
+        AND ph.deleted = 0
+    </select>
+
+    <!-- 查询平均价格 -->
+    <select id="selectAveragePrice" resultType="java.math.BigDecimal">
+        SELECT AVG(price) 
+        FROM price_history 
+        WHERE currency_pair = #{currencyPair} 
+        AND timestamp BETWEEN #{startTime} AND #{endTime}
+        AND deleted = 0
+    </select>
+
+    <!-- 查询价格波动统计 -->
+    <select id="selectPriceVolatilityStats" resultType="java.util.Map">
+        SELECT 
+            ph.currency_pair,
+            COUNT(*) as data_points,
+            MIN(ph.price) as min_price,
+            MAX(ph.price) as max_price,
+            AVG(ph.price) as avg_price,
+            STDDEV(ph.price) as price_stddev,
+            (MAX(ph.price) - MIN(ph.price)) / AVG(ph.price) * 100 as volatility_percentage
+        FROM price_history ph
+        WHERE ph.currency_pair = #{currencyPair}
+        AND ph.timestamp BETWEEN #{startTime} AND #{endTime}
+        AND ph.deleted = 0
+        GROUP BY ph.currency_pair
+    </select>
+
+    <!-- 查询K线数据 -->
+    <select id="selectKLineData" resultMap="BaseResultMap">
+        <include refid="selectPriceHistory" />
+        AND ph.currency_pair = #{currencyPair}
+        AND ph.interval_type = #{intervalType}
+        AND ph.timestamp BETWEEN #{startTime} AND #{endTime}
+        AND ph.open IS NOT NULL 
+        AND ph.close IS NOT NULL
+        ORDER BY ph.timestamp ASC
+    </select>
+
+    <!-- 查询交易量统计 -->
+    <select id="selectVolumeStats" resultType="java.util.Map">
+        SELECT 
+            ph.currency_pair,
+            SUM(ph.volume) as total_volume,
+            AVG(ph.volume) as avg_volume,
+            MIN(ph.volume) as min_volume,
+            MAX(ph.volume) as max_volume,
+            COUNT(*) as data_points
+        FROM price_history ph
+        WHERE ph.currency_pair = #{currencyPair}
+        AND ph.timestamp BETWEEN #{startTime} AND #{endTime}
+        AND ph.volume IS NOT NULL
+        AND ph.deleted = 0
+        GROUP BY ph.currency_pair
+    </select>
+
+    <!-- 查询价格趋势 -->
+    <select id="selectPriceTrend" resultType="java.util.Map">
+        SELECT 
+            DATE(ph.timestamp) as date,
+            MIN(ph.price) as daily_low,
+            MAX(ph.price) as daily_high,
+            AVG(ph.price) as daily_avg,
+            SUM(ph.volume) as daily_volume,
+            COUNT(*) as data_points
+        FROM price_history ph
+        WHERE ph.currency_pair = #{currencyPair}
+        AND ph.timestamp BETWEEN #{startTime} AND #{endTime}
+        AND ph.deleted = 0
+        GROUP BY DATE(ph.timestamp)
+        ORDER BY date ASC
+    </select>
+
+    <!-- 查询小时级价格统计 -->
+    <select id="selectHourlyStats" resultType="java.util.Map">
+        SELECT 
+            HOUR(ph.timestamp) as hour,
+            COUNT(*) as count,
+            AVG(ph.price) as avg_price,
+            MIN(ph.price) as min_price,
+            MAX(ph.price) as max_price,
+            SUM(ph.volume) as total_volume
+        FROM price_history ph
+        WHERE ph.currency_pair = #{currencyPair}
+        AND DATE(ph.timestamp) = #{date}
+        AND ph.deleted = 0
+        GROUP BY HOUR(ph.timestamp)
+        ORDER BY hour ASC
+    </select>
+
+    <!-- 查询最近N条价格记录 -->
+    <select id="selectRecentPrices" resultMap="BaseResultMap">
+        <include refid="selectPriceHistory" />
+        AND ph.currency_pair = #{currencyPair}
+        <if test="intervalType != null and intervalType != ''">
+            AND ph.interval_type = #{intervalType}
+        </if>
+        ORDER BY ph.timestamp DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 查询价格变化率 -->
+    <select id="selectPriceChangeRate" resultType="java.util.Map">
+        SELECT 
+            ph.currency_pair,
+            (
+                SELECT price FROM price_history 
+                WHERE currency_pair = #{currencyPair} 
+                AND timestamp >= #{startTime} 
+                AND deleted = 0 
+                ORDER BY timestamp ASC LIMIT 1
+            ) as start_price,
+            (
+                SELECT price FROM price_history 
+                WHERE currency_pair = #{currencyPair} 
+                AND timestamp &lt;= #{endTime} 
+                AND deleted = 0 
+                ORDER BY timestamp DESC LIMIT 1
+            ) as end_price,
+            (
+                (
+                    SELECT price FROM price_history 
+                    WHERE currency_pair = #{currencyPair} 
+                    AND timestamp &lt;= #{endTime} 
+                    AND deleted = 0 
+                    ORDER BY timestamp DESC LIMIT 1
+                ) - (
+                    SELECT price FROM price_history 
+                    WHERE currency_pair = #{currencyPair} 
+                    AND timestamp >= #{startTime} 
+                    AND deleted = 0 
+                    ORDER BY timestamp ASC LIMIT 1
+                )
+            ) / (
+                SELECT price FROM price_history 
+                WHERE currency_pair = #{currencyPair} 
+                AND timestamp >= #{startTime} 
+                AND deleted = 0 
+                ORDER BY timestamp ASC LIMIT 1
+            ) * 100 as change_rate_percentage
+        FROM price_history ph
+        WHERE ph.currency_pair = #{currencyPair}
+        AND ph.deleted = 0
+        LIMIT 1
+    </select>
+
+    <!-- 查询支撑位和阻力位 -->
+    <select id="selectSupportResistanceLevels" resultType="java.util.Map">
+        SELECT 
+            ph.currency_pair,
+            ROUND(MIN(ph.price), 2) as support_level,
+            ROUND(MAX(ph.price), 2) as resistance_level,
+            ROUND(AVG(ph.price), 2) as middle_level,
+            COUNT(*) as data_points
+        FROM price_history ph
+        WHERE ph.currency_pair = #{currencyPair}
+        AND ph.timestamp BETWEEN #{startTime} AND #{endTime}
+        AND ph.deleted = 0
+        GROUP BY ph.currency_pair
+    </select>
+
+    <!-- 统计价格记录数量 -->
+    <select id="countPriceRecords" resultType="java.lang.Long">
+        SELECT COUNT(*) 
+        FROM price_history ph 
+        WHERE ph.deleted = 0
+        <include refid="whereConditions" />
+    </select>
+
+    <!-- 批量插入价格历史 -->
+    <insert id="batchInsert">
+        INSERT INTO price_history (
+            currency_pair, price, volume, high, low, open, close, 
+            source, interval_type, timestamp, created_at, updated_at
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.currencyPair}, #{item.price}, #{item.volume}, #{item.high}, #{item.low}, 
+                #{item.open}, #{item.close}, #{item.source}, #{item.intervalType}, 
+                #{item.timestamp}, NOW(), NOW()
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量软删除价格记录 -->
+    <update id="batchDelete">
+        UPDATE price_history 
+        SET deleted = 1, updated_at = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 清理过期价格数据 -->
+    <update id="cleanupExpiredData">
+        UPDATE price_history 
+        SET deleted = 1, updated_at = NOW()
+        WHERE timestamp &lt; #{expiredDate}
+        AND deleted = 0
+    </update>
+
+    <!-- 物理删除过期数据 -->
+    <delete id="deleteExpiredData">
+        DELETE FROM price_history 
+        WHERE timestamp &lt; #{expiredDate}
+        AND deleted = 1
+    </delete>
+
+</mapper>

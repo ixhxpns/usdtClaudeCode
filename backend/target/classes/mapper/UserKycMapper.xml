@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.usdttrading.repository.UserKycMapper">
+
+    <!-- 获取即将过期的KYC记录 -->
+    <select id="findExpiringKyc" resultType="com.usdttrading.entity.UserKyc">
+        SELECT * FROM user_kyc 
+        WHERE status = 'approved' 
+          AND expires_at IS NOT NULL
+          AND expires_at BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL #{days} DAY)
+          AND deleted = 0
+        ORDER BY expires_at ASC
+    </select>
+
+</mapper>

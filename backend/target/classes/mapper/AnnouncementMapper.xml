@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.usdttrading.repository.AnnouncementMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.usdttrading.entity.Announcement">
+        <id column="id" property="id" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="type" property="type" />
+        <result column="priority" property="priority" />
+        <result column="target_audience" property="targetAudience" />
+        <result column="is_active" property="isActive" />
+        <result column="is_popup" property="isPopup" />
+        <result column="publish_at" property="publishAt" />
+        <result column="expire_at" property="expireAt" />
+        <result column="created_by" property="createdBy" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="deleted" property="deleted" />
+        <result column="creator_name" property="creatorName" />
+    </resultMap>
+
+    <!-- 通用查询SQL片段 -->
+    <sql id="selectAnnouncementWithCreator">
+        SELECT a.*, u.email as creator_name 
+        FROM announcements a 
+        LEFT JOIN users u ON a.created_by = u.id 
+        WHERE a.deleted = 0
+    </sql>
+
+    <!-- 查询条件SQL片段 -->
+    <sql id="whereConditions">
+        <where>
+            <if test="title != null and title != ''">
+                AND a.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="type != null and type != ''">
+                AND a.type = #{type}
+            </if>
+            <if test="priority != null and priority != ''">
+                AND a.priority = #{priority}
+            </if>
+            <if test="targetAudience != null and targetAudience != ''">
+                AND a.target_audience = #{targetAudience}
+            </if>
+            <if test="isActive != null">
+                AND a.is_active = #{isActive}
+            </if>
+            <if test="isPopup != null">
+                AND a.is_popup = #{isPopup}
+            </if>
+            <if test="createdBy != null">
+                AND a.created_by = #{createdBy}
+            </if>
+            <if test="startTime != null">
+                AND a.created_at &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND a.created_at &lt;= #{endTime}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 根据ID查询公告（包含创建者信息） -->
+    <select id="selectById" resultMap="BaseResultMap">
+        <include refid="selectAnnouncementWithCreator" />
+        AND a.id = #{id}
+    </select>
+
+    <!-- 分页查询公告列表 -->
+    <select id="selectAnnouncementList" resultMap="BaseResultMap">
+        <include refid="selectAnnouncementWithCreator" />
+        <include refid="whereConditions" />
+        ORDER BY a.priority DESC, a.publish_at DESC, a.created_at DESC
+    </select>
+
+    <!-- 查询有效的公告 -->
+    <select id="selectActiveAnnouncements" resultMap="BaseResultMap">
+        <include refid="selectAnnouncementWithCreator" />
+        AND a.is_active = 1 
+        AND a.publish_at &lt;= NOW() 
+        AND (a.expire_at IS NULL OR a.expire_at &gt; NOW())
+        ORDER BY a.priority DESC, a.publish_at DESC
+    </select>
+
+    <!-- 查询弹窗公告 -->
+    <select id="selectPopupAnnouncements" resultMap="BaseResultMap">
+        <include refid="selectAnnouncementWithCreator" />
+        AND a.is_active = 1 
+        AND a.is_popup = 1 
+        AND a.publish_at &lt;= NOW() 
+        AND (a.expire_at IS NULL OR a.expire_at &gt; NOW())
+        ORDER BY a.priority DESC, a.publish_at DESC
+    </select>
+
+    <!-- 分页查询指定目标受众的公告 -->
+    <select id="selectPageByAudience" resultMap="BaseResultMap">
+        <include refid="selectAnnouncementWithCreator" />
+        AND a.is_active = 1 
+        AND (a.target_audience = #{audience} OR a.target_audience = 'all') 
+        AND a.publish_at &lt;= NOW() 
+        AND (a.expire_at IS NULL OR a.expire_at &gt; NOW())
+        ORDER BY a.priority DESC, a.publish_at DESC
+    </select>
+
+    <!-- 查询即将过期的公告 -->
+    <select id="selectExpiringAnnouncements" resultMap="BaseResultMap">
+        <include refid="selectAnnouncementWithCreator" />
+        AND a.is_active = 1 
+        AND a.expire_at IS NOT NULL 
+        AND a.expire_at BETWEEN NOW() AND #{beforeTime}
+        ORDER BY a.expire_at ASC
+    </select>
+
+    <!-- 根据类型查询公告 -->
+    <select id="selectByType" resultMap="BaseResultMap">
+        <include refid="selectAnnouncementWithCreator" />
+        AND a.is_active = 1 
+        AND a.type = #{type}
+        ORDER BY a.priority DESC, a.publish_at DESC
+    </select>
+
+    <!-- 查询已过期的公告 -->
+    <select id="selectExpiredAnnouncements" resultMap="BaseResultMap">
+        <include refid="selectAnnouncementWithCreator" />
+        AND a.expire_at IS NOT NULL 
+        AND a.expire_at &lt;= NOW()
+        ORDER BY a.expire_at DESC
+    </select>
+
+    <!-- 查询待发布的公告 -->
+    <select id="selectPendingAnnouncements" resultMap="BaseResultMap">
+        <include refid="selectAnnouncementWithCreator" />
+        AND a.is_active = 1 
+        AND a.publish_at &gt; NOW()
+        ORDER BY a.publish_at ASC
+    </select>
+
+    <!-- 统计公告数量 -->
+    <select id="countAnnouncements" resultType="java.lang.Long">
+        SELECT COUNT(*) 
+        FROM announcements a 
+        WHERE a.deleted = 0
+        <include refid="whereConditions" />
+    </select>
+
+    <!-- 统计按类型分组的公告数量 -->
+    <select id="countByType" resultType="java.util.Map">
+        SELECT a.type, COUNT(*) as count
+        FROM announcements a 
+        WHERE a.deleted = 0
+        GROUP BY a.type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计按状态分组的公告数量 -->
+    <select id="countByStatus" resultType="java.util.Map">
+        SELECT 
+            CASE 
+                WHEN a.is_active = 0 THEN 'inactive'
+                WHEN a.publish_at &gt; NOW() THEN 'pending'
+                WHEN a.expire_at IS NOT NULL AND a.expire_at &lt;= NOW() THEN 'expired'
+                ELSE 'active'
+            END as status,
+            COUNT(*) as count
+        FROM announcements a 
+        WHERE a.deleted = 0
+        GROUP BY status
+        ORDER BY count DESC
+    </select>
+
+    <!-- 批量更新公告状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE announcements 
+        SET is_active = #{isActive}, updated_at = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 批量软删除公告 -->
+    <update id="batchDelete">
+        UPDATE announcements 
+        SET deleted = 1, updated_at = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 更新公告发布时间 -->
+    <update id="updatePublishTime">
+        UPDATE announcements 
+        SET publish_at = #{publishAt}, updated_at = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <!-- 更新公告过期时间 -->
+    <update id="updateExpireTime">
+        UPDATE announcements 
+        SET expire_at = #{expireAt}, updated_at = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <!-- 自动禁用过期公告 -->
+    <update id="disableExpiredAnnouncements">
+        UPDATE announcements 
+        SET is_active = 0, updated_at = NOW()
+        WHERE expire_at IS NOT NULL 
+        AND expire_at &lt;= NOW() 
+        AND is_active = 1 
+        AND deleted = 0
+    </update>
+
+</mapper>

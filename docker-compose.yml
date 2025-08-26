@@ -1,0 +1,515 @@
+# ============================================================================
+# USDT Trading Platform Docker Compose Configuration
+# ============================================================================
+# Production-ready configuration with monitoring, logging, and health checks
+# Version: 3.8 (Compatible with Docker Engine 19.03.0+)
+# ============================================================================
+
+version: '3.8'
+
+# ============================================================================
+# SERVICES CONFIGURATION
+# ============================================================================
+services:
+  # ============================================================================
+  # MySQL Database Service
+  # ============================================================================
+  mysql:
+    image: mysql:8.0.35
+    container_name: usdt-mysql
+    restart: ${DOCKER_RESTART_POLICY:-unless-stopped}
+    
+    # Environment variables
+    environment:
+      MYSQL_ROOT_PASSWORD: UsdtTrading123!
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-usdt_trading_platform}
+      MYSQL_USER: ${MYSQL_USER:-usdt_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-UsdtUser123!}
+      TZ: ${TZ:-UTC}
+    
+    # Port mapping
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    
+    # Volume mounts
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - mysql_logs:/var/log/mysql
+      - ./devdocrecord/DBAAgent/database-schema.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    
+    # Network configuration
+    networks:
+      - usdt-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: ${MYSQL_MEMORY_LIMIT:-1g}
+          cpus: '${MYSQL_CPU_LIMIT:-1.0}'
+        reservations:
+          memory: 256m
+          cpus: '0.25'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    
+    # MySQL configuration
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --innodb-buffer-pool-size=512M
+      - --max-connections=200
+    
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-3}"
+        labels: "service=mysql,environment=${SPRING_PROFILES_ACTIVE:-prod}"
+
+  # ============================================================================
+  # Redis Cache Service
+  # ============================================================================
+  redis:
+    image: redis:7.2-alpine
+    container_name: usdt-redis
+    restart: ${DOCKER_RESTART_POLICY:-unless-stopped}
+    
+    # Environment variables
+    environment:
+      TZ: ${TZ:-UTC}
+    
+    # Port mapping
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    
+    # Volume mounts
+    volumes:
+      - redis_data:/data
+      - redis_logs:/var/log/redis
+      - ./docker/redis/redis.conf:/etc/redis/redis.conf:ro
+    
+    # Network configuration
+    networks:
+      - usdt-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: ${REDIS_MEMORY_LIMIT:-512m}
+          cpus: '${REDIS_CPU_LIMIT:-0.5}'
+        reservations:
+          memory: 64m
+          cpus: '0.1'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Redis configuration
+    command: redis-server /etc/redis/redis.conf --logfile /var/log/redis/redis.log
+    
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-3}"
+        labels: "service=redis,environment=${SPRING_PROFILES_ACTIVE:-prod}"
+
+  # ============================================================================
+  # Backend API Service
+  # ============================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - MAVEN_OPTS=-Dmaven.repo.local=/app/.m2/repository
+    
+    container_name: usdt-backend
+    restart: ${DOCKER_RESTART_POLICY:-unless-stopped}
+    
+    # Environment variables
+    environment:
+      # Spring configuration
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      
+      # Database configuration
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-usdt_trading_platform}
+      DB_USERNAME: root
+      DB_PASSWORD: UsdtTrading123!
+      DB_CONNECTION_TIMEOUT: ${DB_CONNECTION_TIMEOUT:-30}
+      
+      # Redis configuration
+      REDIS_HOST: redis
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_TIMEOUT: ${REDIS_TIMEOUT:-5000}
+      
+      # JWT configuration
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400}
+      
+      # Email configuration
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      
+      # File storage configuration
+      FILE_STORAGE_PATH: ${FILE_STORAGE_PATH:-/app/uploads}
+      FILE_MAX_SIZE: ${FILE_MAX_SIZE:-100MB}
+      
+      # Other configurations
+      TZ: ${TZ:-UTC}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    
+    # Port mapping
+    ports:
+      - "${BACKEND_PORT:-8090}:8080"
+    
+    # Volume mounts
+    volumes:
+      - backend_logs:/app/logs
+      - backend_uploads:/app/uploads
+      - backend_temp:/app/temp
+      - maven_cache:/app/.m2/repository
+    
+    # Network configuration
+    networks:
+      - usdt-network
+    
+    # Service dependencies
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEMORY_LIMIT:-2g}
+          cpus: '${BACKEND_CPU_LIMIT:-1.0}'
+        reservations:
+          memory: 512m
+          cpus: '0.5'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 120s
+    
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: "${LOG_MAX_SIZE:-100m}"
+        max-file: "${LOG_MAX_FILES:-5}"
+        labels: "service=backend,environment=${SPRING_PROFILES_ACTIVE:-prod}"
+
+  # ============================================================================
+  # Admin Frontend Service
+  # ============================================================================
+  admin-frontend:
+    build:
+      context: ./frontend/admin
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - BUILD_ENV=${SPRING_PROFILES_ACTIVE:-prod}
+    
+    container_name: usdt-admin-frontend
+    restart: ${DOCKER_RESTART_POLICY:-unless-stopped}
+    
+    # Environment variables
+    environment:
+      TZ: ${TZ:-UTC}
+    
+    # Port mapping
+    ports:
+      - "${FRONTEND_ADMIN_PORT:-3000}:80"
+    
+    # Volume mounts
+    volumes:
+      - admin_logs:/var/log/nginx
+    
+    # Network configuration
+    networks:
+      - usdt-network
+    
+    # Service dependencies
+    depends_on:
+      backend:
+        condition: service_healthy
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: ${FRONTEND_MEMORY_LIMIT:-256m}
+          cpus: '${FRONTEND_CPU_LIMIT:-0.5}'
+        reservations:
+          memory: 32m
+          cpus: '0.1'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-3}"
+        labels: "service=admin-frontend,environment=${SPRING_PROFILES_ACTIVE:-prod}"
+
+  # ============================================================================
+  # User Frontend Service
+  # ============================================================================
+  user-frontend:
+    build:
+      context: ./frontend/user
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - BUILD_ENV=${SPRING_PROFILES_ACTIVE:-prod}
+    
+    container_name: usdt-user-frontend
+    restart: ${DOCKER_RESTART_POLICY:-unless-stopped}
+    
+    # Environment variables
+    environment:
+      TZ: ${TZ:-UTC}
+    
+    # Port mapping
+    ports:
+      - "${FRONTEND_USER_PORT:-3001}:80"
+    
+    # Volume mounts
+    volumes:
+      - user_logs:/var/log/nginx
+    
+    # Network configuration
+    networks:
+      - usdt-network
+    
+    # Service dependencies
+    depends_on:
+      backend:
+        condition: service_healthy
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: ${FRONTEND_MEMORY_LIMIT:-256m}
+          cpus: '${FRONTEND_CPU_LIMIT:-0.5}'
+        reservations:
+          memory: 32m
+          cpus: '0.1'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: "${LOG_MAX_SIZE:-50m}"
+        max-file: "${LOG_MAX_FILES:-3}"
+        labels: "service=user-frontend,environment=${SPRING_PROFILES_ACTIVE:-prod}"
+
+  # ============================================================================
+  # Nginx Reverse Proxy Service
+  # ============================================================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: usdt-nginx
+    restart: ${DOCKER_RESTART_POLICY:-unless-stopped}
+    
+    # Environment variables
+    environment:
+      TZ: ${TZ:-UTC}
+    
+    # Port mapping
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    
+    # Volume mounts
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+      - nginx_cache:/var/cache/nginx
+      - backend_uploads:/app/uploads:ro
+    
+    # Network configuration
+    networks:
+      - usdt-network
+    
+    # Service dependencies
+    depends_on:
+      backend:
+        condition: service_healthy
+      admin-frontend:
+        condition: service_healthy
+      user-frontend:
+        condition: service_healthy
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: ${NGINX_MEMORY_LIMIT:-256m}
+          cpus: '${NGINX_CPU_LIMIT:-0.5}'
+        reservations:
+          memory: 32m
+          cpus: '0.1'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: "${LOG_MAX_SIZE:-100m}"
+        max-file: "${LOG_MAX_FILES:-5}"
+        labels: "service=nginx,environment=${SPRING_PROFILES_ACTIVE:-prod}"
+
+# ============================================================================
+# VOLUME CONFIGURATION
+# ============================================================================
+# Persistent data storage volumes
+volumes:
+  # Database volumes
+  mysql_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MYSQL_DATA_PATH:-./data/mysql}
+  
+  mysql_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MYSQL_LOGS_PATH:-./logs/mysql}
+  
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${REDIS_DATA_PATH:-./data/redis}
+  
+  redis_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${REDIS_LOGS_PATH:-./logs/redis}
+  
+  # Application volumes
+  backend_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${BACKEND_LOGS_PATH:-./logs/backend}
+  
+  backend_uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${BACKEND_UPLOADS_PATH:-./data/uploads}
+  
+  backend_temp:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${BACKEND_TEMP_PATH:-./data/temp}
+  
+  # Frontend volumes
+  admin_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${ADMIN_LOGS_PATH:-./logs/admin}
+  
+  user_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${USER_LOGS_PATH:-./logs/user}
+  
+  # Nginx volumes
+  nginx_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${NGINX_LOGS_PATH:-./logs/nginx}
+  
+  nginx_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${NGINX_CACHE_PATH:-./data/nginx-cache}
+  
+  # Build cache
+  maven_cache:
+    driver: local
+    name: ${PROJECT_NAME:-usdt-trading-platform}_maven_cache
+
+# ============================================================================
+# NETWORK CONFIGURATION
+# ============================================================================
+# Custom bridge network for service communication
+networks:
+  usdt-network:
+    driver: bridge

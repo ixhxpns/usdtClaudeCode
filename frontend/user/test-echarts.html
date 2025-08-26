@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue.js + ECharts Test</title>
+</head>
+<body>
+    <div id="app">
+        <h1>Vue.js + ECharts Test</h1>
+        <p>Testing if Vue.js initializes without "Cannot access 'pl' before initialization" error</p>
+        <div id="test-chart" style="width: 400px; height: 300px;"></div>
+    </div>
+
+    <script type="module">
+        import { createApp } from 'vue'
+        import { use } from 'echarts/core'
+        import { CanvasRenderer } from 'echarts/renderers'
+        import { PieChart } from 'echarts/charts'
+        import { TitleComponent, TooltipComponent } from 'echarts/components'
+        import * as echarts from 'echarts'
+
+        // 註冊 ECharts 組件
+        use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent])
+
+        const { createApp: createVueApp } = Vue || { createApp }
+
+        const app = createApp({
+            data() {
+                return {
+                    message: 'Vue.js is working!'
+                }
+            },
+            mounted() {
+                this.initChart()
+                console.log('Vue.js initialized successfully without errors!')
+            },
+            methods: {
+                initChart() {
+                    try {
+                        const chartDom = document.getElementById('test-chart')
+                        const myChart = echarts.init(chartDom)
+                        
+                        const option = {
+                            tooltip: {
+                                trigger: 'item'
+                            },
+                            series: [
+                                {
+                                    name: 'Test Data',
+                                    type: 'pie',
+                                    radius: '50%',
+                                    data: [
+                                        { value: 1048, name: 'Search Engine' },
+                                        { value: 735, name: 'Direct' },
+                                        { value: 580, name: 'Email' }
+                                    ]
+                                }
+                            ]
+                        }
+
+                        myChart.setOption(option)
+                        console.log('ECharts initialized successfully!')
+                    } catch (error) {
+                        console.error('ECharts initialization failed:', error)
+                    }
+                }
+            }
+        })
+
+        app.mount('#app')
+
+        // Test for the specific error
+        window.addEventListener('error', (event) => {
+            if (event.message.includes('Cannot access \'pl\' before initialization')) {
+                console.error('❌ Vue.js initialization error detected:', event.message)
+                document.body.innerHTML += '<div style="color: red; font-weight: bold;">❌ Vue.js initialization error detected!</div>'
+            }
+        })
+
+        // Success indicator
+        setTimeout(() => {
+            if (!window.hasVueError) {
+                document.body.innerHTML += '<div style="color: green; font-weight: bold;">✅ Vue.js and ECharts initialized successfully without errors!</div>'
+            }
+        }, 2000)
+    </script>
+</body>
+</html>

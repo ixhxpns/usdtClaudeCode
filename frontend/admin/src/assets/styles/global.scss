@@ -1,0 +1,448 @@
+@import 'variables.scss';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+// Global styles for USDT Trading Platform - Admin Dashboard
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-normal;
+  color: $text-primary;
+  background-color: $bg-admin-content;
+  line-height: $line-height-normal;
+}
+
+// Admin dark theme
+.dark {
+  body {
+    background-color: $bg-darker;
+    color: $text-admin;
+  }
+}
+
+// Admin layout
+.admin-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-sidebar {
+  width: $admin-sidebar-width;
+  background-color: $bg-admin-sidebar;
+  color: $text-admin;
+  transition: width $transition-normal;
+
+  &.collapsed {
+    width: $admin-sidebar-width-collapsed;
+  }
+}
+
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: $admin-sidebar-width;
+  transition: margin-left $transition-normal;
+
+  .admin-sidebar.collapsed + & {
+    margin-left: $admin-sidebar-width-collapsed;
+  }
+}
+
+.admin-header {
+  height: $admin-header-height;
+  background-color: $bg-primary;
+  border-bottom: 1px solid $border-light;
+  box-shadow: $shadow-sm;
+}
+
+.admin-breadcrumb {
+  height: $admin-breadcrumb-height;
+  background-color: $bg-secondary;
+  border-bottom: 1px solid $border-light;
+  padding: 0 $spacing-lg;
+  display: flex;
+  align-items: center;
+}
+
+.admin-content {
+  flex: 1;
+  padding: $spacing-lg;
+  overflow-y: auto;
+}
+
+// Custom scrollbar for admin
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-gray;
+  border-radius: $border-radius-sm;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $border-medium;
+  border-radius: $border-radius-sm;
+  
+  &:hover {
+    background: $border-dark;
+  }
+}
+
+// Focus styles
+*:focus {
+  outline: 2px solid $admin-accent;
+  outline-offset: 2px;
+}
+
+// Admin button styles
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid transparent;
+  border-radius: $border-radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all $transition-normal;
+  user-select: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.btn-primary {
+    background-color: $admin-accent;
+    border-color: $admin-accent;
+    color: $text-white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($admin-accent, 10%);
+      border-color: darken($admin-accent, 10%);
+    }
+  }
+
+  &.btn-secondary {
+    background-color: $admin-secondary;
+    border-color: $admin-secondary;
+    color: $text-white;
+
+    &:hover:not(:disabled) {
+      background-color: lighten($admin-secondary, 10%);
+    }
+  }
+
+  &.btn-success {
+    background-color: $status-approved;
+    border-color: $status-approved;
+    color: $text-white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($status-approved, 10%);
+    }
+  }
+
+  &.btn-warning {
+    background-color: $status-pending;
+    border-color: $status-pending;
+    color: $text-white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($status-pending, 10%);
+    }
+  }
+
+  &.btn-danger {
+    background-color: $status-rejected;
+    border-color: $status-rejected;
+    color: $text-white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($status-rejected, 10%);
+    }
+  }
+
+  &.btn-outline {
+    background-color: transparent;
+    border-color: $border-medium;
+    color: $text-primary;
+
+    &:hover:not(:disabled) {
+      background-color: $bg-gray;
+    }
+  }
+
+  &.btn-sm {
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+  }
+
+  &.btn-lg {
+    padding: $spacing-md $spacing-lg;
+    font-size: $font-size-lg;
+  }
+}
+
+// Admin card styles
+.admin-card {
+  background: $bg-primary;
+  border: 1px solid $border-light;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+
+  .dark & {
+    background: $bg-dark;
+    border-color: $border-dark;
+  }
+
+  &.card-hoverable {
+    transition: all $transition-normal;
+
+    &:hover {
+      box-shadow: $shadow-md;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.admin-card-header {
+  padding: $spacing-lg;
+  border-bottom: 1px solid $border-light;
+  background: $bg-secondary;
+  font-weight: $font-weight-semibold;
+
+  .dark & {
+    background: lighten($bg-dark, 3%);
+    border-color: $border-dark;
+  }
+}
+
+.admin-card-body {
+  padding: $spacing-lg;
+}
+
+.admin-card-footer {
+  padding: $spacing-md $spacing-lg;
+  border-top: 1px solid $border-light;
+  background: $bg-secondary;
+
+  .dark & {
+    background: lighten($bg-dark, 3%);
+    border-color: $border-dark;
+  }
+}
+
+// Status badges
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $border-radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  text-transform: uppercase;
+
+  &.status-active {
+    background-color: rgba($status-active, 0.1);
+    color: $status-active;
+  }
+
+  &.status-inactive {
+    background-color: rgba($status-inactive, 0.1);
+    color: $status-inactive;
+  }
+
+  &.status-pending {
+    background-color: rgba($status-pending, 0.1);
+    color: $status-pending;
+  }
+
+  &.status-approved {
+    background-color: rgba($status-approved, 0.1);
+    color: $status-approved;
+  }
+
+  &.status-rejected {
+    background-color: rgba($status-rejected, 0.1);
+    color: $status-rejected;
+  }
+}
+
+// Admin data table styles
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: $bg-primary;
+
+  th {
+    background-color: $bg-secondary;
+    padding: $spacing-md;
+    text-align: left;
+    font-weight: $font-weight-semibold;
+    border-bottom: 2px solid $border-light;
+    color: $text-primary;
+  }
+
+  td {
+    padding: $spacing-md;
+    border-bottom: 1px solid $border-light;
+    color: $text-primary;
+  }
+
+  tr:hover {
+    background-color: $bg-gray;
+  }
+
+  &.table-striped {
+    tbody tr:nth-child(even) {
+      background-color: $bg-secondary;
+    }
+  }
+}
+
+// Metrics cards
+.metric-card {
+  background: linear-gradient(135deg, $admin-accent 0%, darken($admin-accent, 20%) 100%);
+  color: $text-white;
+  padding: $spacing-lg;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-md;
+
+  .metric-title {
+    font-size: $font-size-sm;
+    opacity: 0.9;
+    margin-bottom: $spacing-xs;
+  }
+
+  .metric-value {
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-sm;
+  }
+
+  .metric-change {
+    font-size: $font-size-sm;
+    display: flex;
+    align-items: center;
+
+    &.positive {
+      color: rgba($success-color, 0.9);
+    }
+
+    &.negative {
+      color: rgba($error-color, 0.9);
+    }
+  }
+}
+
+// Utility classes for admin
+.text-admin-primary { color: $admin-primary; }
+.text-admin-secondary { color: $admin-secondary; }
+.text-admin-accent { color: $admin-accent; }
+.text-status-active { color: $status-active; }
+.text-status-pending { color: $status-pending; }
+.text-status-rejected { color: $status-rejected; }
+
+.bg-admin-primary { background-color: $admin-primary; }
+.bg-admin-secondary { background-color: $admin-secondary; }
+.bg-admin-accent { background-color: $admin-accent; }
+
+// Chart container
+.chart-container {
+  background: $bg-primary;
+  border: 1px solid $border-light;
+  border-radius: $border-radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-sm;
+
+  .chart-title {
+    margin-bottom: $spacing-md;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+  }
+}
+
+// Loading states
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba($bg-primary, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: $z-modal;
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid $border-light;
+    border-top: 4px solid $admin-accent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Responsive admin layout
+@media (max-width: $breakpoint-lg) {
+  .admin-sidebar {
+    width: $admin-sidebar-width-collapsed;
+  }
+
+  .admin-main {
+    margin-left: $admin-sidebar-width-collapsed;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+    transition: transform $transition-normal;
+
+    &.open {
+      transform: translateX(0);
+    }
+  }
+
+  .admin-main {
+    margin-left: 0;
+  }
+
+  .admin-content {
+    padding: $spacing-md;
+  }
+}

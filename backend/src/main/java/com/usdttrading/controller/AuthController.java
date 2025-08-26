@@ -1,0 +1,581 @@
+package com.usdttrading.controller;
+
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.StrUtil;
+import com.usdttrading.dto.ApiResponse;
+import com.usdttrading.entity.User;
+import com.usdttrading.service.UserService;
+import com.usdttrading.service.EmailService;
+import com.usdttrading.service.AuditLogService;
+import com.usdttrading.security.JwtUtil;
+import com.usdttrading.utils.ValidationUtils;
+import com.usdttrading.utils.RequestUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * 認證控制器
+ * 提供用戶註冊、登錄、登出、密碼管理等API端點
+ * 
+ * @author BackendAgent
+ * @version 1.0.0
+ * @since 2025-08-19
+ */
+@Slf4j
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+@Validated
+@Tag(name = "認證管理", description = "用戶認證相關API")
+public class AuthController {
+
+    private final UserService userService;
+    private final EmailService emailService;
+    private final AuditLogService auditLogService;
+    private final JwtUtil jwtUtil;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final ValidationUtils validationUtils;
+
+    /**
+     * 用戶註冊
+     */
+    @PostMapping("/register")
+    @Operation(summary = "用戶註冊", description = "註冊新用戶，需要郵箱驗證")
+    public ApiResponse<Map<String, Object>> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest httpRequest) {
+        
+        String clientIp = RequestUtils.getClientIp(httpRequest);
+        String userAgent = RequestUtils.getUserAgent(httpRequest);
+
+        // 檢查註冊頻率限制
+        String rateLimitKey = "register_limit:" + clientIp;
+        Integer attempts = (Integer) redisTemplate.opsForValue().get(rateLimitKey);
+        if (attempts != null && attempts >= 3) {
+            return ApiResponse.error("註冊過於頻繁，請5分鐘後重試");
+        }
+
+        // 驗證輸入
+        if (!validationUtils.isValidEmail(request.getEmail())) {
+            return ApiResponse.error("郵箱格式無效");
+        }
+
+        if (!validationUtils.isValidPassword(request.getPassword())) {
+            return ApiResponse.error("密碼必須包含8位以上，且包含大小寫字母、數字和特殊字符");
+        }
+
+        try {
+            // 註冊用戶
+            User user = userService.register(request.getEmail(), request.getPassword(), request.getPhone());
+
+            // 生成驗證碼
+            String verificationCode = emailService.generateVerificationCode();
+            String verifyKey = "email_verify:" + user.getId();
+            redisTemplate.opsForValue().set(verifyKey, verificationCode, 5, TimeUnit.MINUTES);
+
+            // 發送驗證郵件
+            emailService.sendVerificationEmail(user.getEmail(), user.getId(), verificationCode);
+
+            // 記錄註冊頻率限制
+            redisTemplate.opsForValue().set(rateLimitKey, (attempts == null ? 0 : attempts) + 1, 5, TimeUnit.MINUTES);
+
+            // 記錄安全事件
+            auditLogService.logSecurityEvent(user.getId(), "USER_REGISTER", 
+                    "用戶註冊", clientIp, userAgent, true, null);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("userId", user.getId());
+            result.put("email", user.getEmail());
+            result.put("message", "註冊成功，請檢查郵箱並驗證");
+
+            return ApiResponse.success(result);
+
+        } catch (Exception e) {
+            // 記錄失敗嘗試
+            redisTemplate.opsForValue().set(rateLimitKey, (attempts == null ? 0 : attempts) + 1, 5, TimeUnit.MINUTES);
+            
+            auditLogService.logSecurityEvent(null, "USER_REGISTER_FAILED", 
+                    "註冊失敗: " + e.getMessage(), clientIp, userAgent, false, e.getMessage());
+            
+            log.error("用戶註冊失敗: {}", e.getMessage());
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 用戶登錄
+     */
+    @PostMapping("/login")
+    @Operation(summary = "用戶登錄", description = "用戶郵箱密碼登錄")
+    public ApiResponse<Map<String, Object>> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {
+
+        String clientIp = RequestUtils.getClientIp(httpRequest);
+        String userAgent = RequestUtils.getUserAgent(httpRequest);
+
+        // 檢查登錄頻率限制
+        String rateLimitKey = "login_limit:" + clientIp;
+        Integer attempts = (Integer) redisTemplate.opsForValue().get(rateLimitKey);
+        if (attempts != null && attempts >= 5) {
+            return ApiResponse.error("登錄嘗試過於頻繁，請15分鐘後重試");
+        }
+
+        try {
+            // 用戶登錄
+            User user = userService.login(request.getEmail(), request.getPassword(), clientIp, userAgent);
+
+            // 生成JWT Token
+            String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getRoleId());
+            String refreshToken = jwtUtil.generateRefreshToken(user.getId());
+
+            // 存儲刷新令牌
+            String refreshKey = "refresh_token:" + user.getId();
+            redisTemplate.opsForValue().set(refreshKey, refreshToken, 7, TimeUnit.DAYS);
+
+            // 記錄設備信息
+            String deviceKey = "user_device:" + user.getId() + ":" + RequestUtils.generateDeviceFingerprint(userAgent, clientIp);
+            Map<String, Object> deviceInfo = new HashMap<>();
+            deviceInfo.put("ip", clientIp);
+            deviceInfo.put("userAgent", userAgent);
+            deviceInfo.put("loginTime", System.currentTimeMillis());
+            redisTemplate.opsForValue().set(deviceKey, deviceInfo, 30, TimeUnit.DAYS);
+
+            // 重置登錄失敗計數
+            redisTemplate.delete(rateLimitKey);
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("accessToken", accessToken);
+            result.put("refreshToken", refreshToken);
+            result.put("user", user);
+            result.put("expiresIn", jwtUtil.getAccessTokenExpiration() / 1000);
+
+            return ApiResponse.success(result);
+
+        } catch (Exception e) {
+            // 記錄失敗嘗試
+            redisTemplate.opsForValue().set(rateLimitKey, (attempts == null ? 0 : attempts) + 1, 15, TimeUnit.MINUTES);
+            
+            auditLogService.logSecurityEvent(null, "USER_LOGIN_FAILED", 
+                    "登錄失敗: " + e.getMessage(), clientIp, userAgent, false, e.getMessage());
+            
+            log.error("用戶登錄失敗: {}", e.getMessage());
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 用戶登出
+     */
+    @PostMapping("/logout")
+    @SaCheckLogin
+    @Operation(summary = "用戶登出", description = "登出當前用戶")
+    public ApiResponse<String> logout(HttpServletRequest httpRequest) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        String clientIp = RequestUtils.getClientIp(httpRequest);
+        String userAgent = RequestUtils.getUserAgent(httpRequest);
+
+        try {
+            // 獲取當前Token
+            String token = StpUtil.getTokenValue();
+            
+            // 將Token加入黑名單
+            if (StrUtil.isNotBlank(token)) {
+                String blacklistKey = "jwt_blacklist:" + token;
+                redisTemplate.opsForValue().set(blacklistKey, "logout", 
+                        jwtUtil.getAccessTokenExpiration(), TimeUnit.MILLISECONDS);
+            }
+
+            // 刪除刷新令牌
+            String refreshKey = "refresh_token:" + userId;
+            redisTemplate.delete(refreshKey);
+
+            // Sa-Token登出
+            userService.logout();
+
+            // 記錄安全事件
+            auditLogService.logSecurityEvent(userId, "USER_LOGOUT", 
+                    "用戶登出", clientIp, userAgent, true, null);
+
+            return ApiResponse.success("登出成功");
+
+        } catch (Exception e) {
+            log.error("用戶登出失敗: {}", e.getMessage());
+            return ApiResponse.error("登出失敗");
+        }
+    }
+
+    /**
+     * 刷新Token
+     */
+    @PostMapping("/refresh")
+    @Operation(summary = "刷新Token", description = "使用刷新令牌獲取新的訪問令牌")
+    public ApiResponse<Map<String, Object>> refreshToken(@RequestBody RefreshTokenRequest request) {
+        try {
+            // 驗證刷新令牌
+            if (!jwtUtil.validateToken(request.getRefreshToken())) {
+                return ApiResponse.error("刷新令牌無效");
+            }
+
+            Long userId = jwtUtil.getUserIdFromToken(request.getRefreshToken());
+            
+            // 檢查Redis中的刷新令牌
+            String refreshKey = "refresh_token:" + userId;
+            String storedToken = (String) redisTemplate.opsForValue().get(refreshKey);
+            
+            if (!request.getRefreshToken().equals(storedToken)) {
+                return ApiResponse.error("刷新令牌不匹配");
+            }
+
+            // 獲取用戶信息
+            User user = userService.getById(userId);
+            
+            // 生成新的訪問令牌
+            String newAccessToken = jwtUtil.generateAccessToken(user.getId(), user.getRoleId());
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("accessToken", newAccessToken);
+            result.put("expiresIn", jwtUtil.getAccessTokenExpiration() / 1000);
+
+            return ApiResponse.success(result);
+
+        } catch (Exception e) {
+            log.error("刷新Token失敗: {}", e.getMessage());
+            return ApiResponse.error("刷新Token失敗");
+        }
+    }
+
+    /**
+     * 郵箱驗證
+     */
+    @PostMapping("/verify-email")
+    @Operation(summary = "郵箱驗證", description = "驗證用戶郵箱")
+    public ApiResponse<String> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        try {
+            String verifyKey = "email_verify:" + request.getUserId();
+            String storedCode = (String) redisTemplate.opsForValue().get(verifyKey);
+
+            if (storedCode == null) {
+                return ApiResponse.error("驗證碼已過期");
+            }
+
+            if (!storedCode.equals(request.getCode())) {
+                return ApiResponse.error("驗證碼錯誤");
+            }
+
+            // 驗證郵箱
+            userService.verifyEmail(request.getUserId());
+            
+            // 刪除驗證碼
+            redisTemplate.delete(verifyKey);
+
+            return ApiResponse.success("郵箱驗證成功");
+
+        } catch (Exception e) {
+            log.error("郵箱驗證失敗: {}", e.getMessage());
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 重發驗證郵件
+     */
+    @PostMapping("/resend-verification")
+    @Operation(summary = "重發驗證郵件", description = "重新發送郵箱驗證碼")
+    public ApiResponse<String> resendVerification(@RequestParam Long userId) {
+        try {
+            User user = userService.getById(userId);
+            
+            if (user.isEmailVerified()) {
+                return ApiResponse.error("郵箱已驗證");
+            }
+
+            // 檢查重發頻率
+            String resendKey = "resend_limit:" + userId;
+            Integer attempts = (Integer) redisTemplate.opsForValue().get(resendKey);
+            if (attempts != null && attempts >= 3) {
+                return ApiResponse.error("重發次數過多，請1小時後重試");
+            }
+
+            // 生成新驗證碼
+            String verificationCode = emailService.generateVerificationCode();
+            String verifyKey = "email_verify:" + userId;
+            redisTemplate.opsForValue().set(verifyKey, verificationCode, 5, TimeUnit.MINUTES);
+
+            // 發送驗證郵件
+            emailService.sendVerificationEmail(user.getEmail(), userId, verificationCode);
+
+            // 記錄重發次數
+            redisTemplate.opsForValue().set(resendKey, (attempts == null ? 0 : attempts) + 1, 1, TimeUnit.HOURS);
+
+            return ApiResponse.success("驗證郵件已重新發送");
+
+        } catch (Exception e) {
+            log.error("重發驗證郵件失敗: {}", e.getMessage());
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 忘記密碼
+     */
+    @PostMapping("/forgot-password")
+    @Operation(summary = "忘記密碼", description = "發送密碼重設郵件")
+    public ApiResponse<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
+                                            HttpServletRequest httpRequest) {
+        String clientIp = RequestUtils.getClientIp(httpRequest);
+        
+        try {
+            User user = userService.getByEmail(request.getEmail());
+            if (user == null) {
+                // 為了安全，不透露用戶是否存在
+                return ApiResponse.success("如果郵箱存在，重設鏈接已發送");
+            }
+
+            // 檢查重設頻率
+            String resetKey = "reset_limit:" + user.getId();
+            Integer attempts = (Integer) redisTemplate.opsForValue().get(resetKey);
+            if (attempts != null && attempts >= 3) {
+                return ApiResponse.error("重設次數過多，請1小時後重試");
+            }
+
+            // 生成重設令牌
+            String resetToken = jwtUtil.generatePasswordResetToken(user.getId());
+            String tokenKey = "reset_token:" + user.getId();
+            redisTemplate.opsForValue().set(tokenKey, resetToken, 30, TimeUnit.MINUTES);
+
+            // 發送重設郵件
+            emailService.sendPasswordResetEmail(user.getEmail(), user.getId(), resetToken);
+
+            // 記錄重設次數
+            redisTemplate.opsForValue().set(resetKey, (attempts == null ? 0 : attempts) + 1, 1, TimeUnit.HOURS);
+
+            // 記錄安全事件
+            auditLogService.logSecurityEvent(user.getId(), "PASSWORD_RESET_REQUEST", 
+                    "密碼重設請求", clientIp, "", true, null);
+
+            return ApiResponse.success("如果郵箱存在，重設鏈接已發送");
+
+        } catch (Exception e) {
+            log.error("忘記密碼處理失敗: {}", e.getMessage());
+            return ApiResponse.error("處理失敗，請稍後重試");
+        }
+    }
+
+    /**
+     * 重設密碼
+     */
+    @PostMapping("/reset-password")
+    @Operation(summary = "重設密碼", description = "使用重設令牌重設密碼")
+    public ApiResponse<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request,
+                                           HttpServletRequest httpRequest) {
+        String clientIp = RequestUtils.getClientIp(httpRequest);
+        
+        try {
+            // 驗證重設令牌
+            if (!jwtUtil.validateToken(request.getToken())) {
+                return ApiResponse.error("重設令牌無效或已過期");
+            }
+
+            Long userId = jwtUtil.getUserIdFromToken(request.getToken());
+            
+            // 檢查Redis中的令牌
+            String tokenKey = "reset_token:" + userId;
+            String storedToken = (String) redisTemplate.opsForValue().get(tokenKey);
+            
+            if (!request.getToken().equals(storedToken)) {
+                return ApiResponse.error("重設令牌不匹配");
+            }
+
+            // 驗證新密碼
+            if (!validationUtils.isValidPassword(request.getNewPassword())) {
+                return ApiResponse.error("密碼必須包含8位以上，且包含大小寫字母、數字和特殊字符");
+            }
+
+            // 重設密碼
+            userService.changePassword(userId, "", request.getNewPassword());
+
+            // 刪除重設令牌
+            redisTemplate.delete(tokenKey);
+            
+            // 刪除所有該用戶的會話
+            StpUtil.kickout(userId);
+
+            // 記錄安全事件
+            auditLogService.logSecurityEvent(userId, "PASSWORD_RESET_SUCCESS", 
+                    "密碼重設成功", clientIp, "", true, null);
+
+            return ApiResponse.success("密碼重設成功，請重新登錄");
+
+        } catch (Exception e) {
+            log.error("重設密碼失敗: {}", e.getMessage());
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 修改密碼
+     */
+    @PostMapping("/change-password")
+    @SaCheckLogin
+    @Operation(summary = "修改密碼", description = "修改當前用戶密碼")
+    public ApiResponse<String> changePassword(@Valid @RequestBody ChangePasswordRequest request,
+                                            HttpServletRequest httpRequest) {
+        Long userId = StpUtil.getLoginIdAsLong();
+        String clientIp = RequestUtils.getClientIp(httpRequest);
+        
+        try {
+            // 驗證新密碼
+            if (!validationUtils.isValidPassword(request.getNewPassword())) {
+                return ApiResponse.error("密碼必須包含8位以上，且包含大小寫字母、數字和特殊字符");
+            }
+
+            // 修改密碼
+            userService.changePassword(userId, request.getOldPassword(), request.getNewPassword());
+
+            // 記錄安全事件
+            auditLogService.logSecurityEvent(userId, "PASSWORD_CHANGE", 
+                    "用戶修改密碼", clientIp, "", true, null);
+
+            return ApiResponse.success("密碼修改成功");
+
+        } catch (Exception e) {
+            // 記錄失敗嘗試
+            auditLogService.logSecurityEvent(userId, "PASSWORD_CHANGE_FAILED", 
+                    "密碼修改失敗: " + e.getMessage(), clientIp, "", false, e.getMessage());
+            
+            log.error("修改密碼失敗: {}", e.getMessage());
+            return ApiResponse.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 獲取當前用戶信息
+     */
+    @GetMapping("/me")
+    @SaCheckLogin
+    @Operation(summary = "獲取當前用戶", description = "獲取當前登錄用戶信息")
+    public ApiResponse<User> getCurrentUser() {
+        try {
+            Long userId = StpUtil.getLoginIdAsLong();
+            User user = userService.getById(userId);
+            return ApiResponse.success(user);
+        } catch (Exception e) {
+            log.error("獲取用戶信息失敗: {}", e.getMessage());
+            return ApiResponse.error("獲取用戶信息失敗");
+        }
+    }
+
+    // DTO classes
+    public static class RegisterRequest {
+        @NotBlank(message = "郵箱不能為空")
+        @Email(message = "郵箱格式無效")
+        private String email;
+
+        @NotBlank(message = "密碼不能為空")
+        @Size(min = 8, message = "密碼長度至少8位")
+        private String password;
+
+        private String phone;
+
+        // getters and setters
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
+    }
+
+    public static class LoginRequest {
+        @NotBlank(message = "郵箱不能為空")
+        @Email(message = "郵箱格式無效")
+        private String email;
+
+        @NotBlank(message = "密碼不能為空")
+        private String password;
+
+        // getters and setters
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+
+    public static class RefreshTokenRequest {
+        @NotBlank(message = "刷新令牌不能為空")
+        private String refreshToken;
+
+        // getters and setters
+        public String getRefreshToken() { return refreshToken; }
+        public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
+    }
+
+    public static class VerifyEmailRequest {
+        private Long userId;
+        @NotBlank(message = "驗證碼不能為空")
+        private String code;
+
+        // getters and setters
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+    }
+
+    public static class ForgotPasswordRequest {
+        @NotBlank(message = "郵箱不能為空")
+        @Email(message = "郵箱格式無效")
+        private String email;
+
+        // getters and setters
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+
+    public static class ResetPasswordRequest {
+        @NotBlank(message = "重設令牌不能為空")
+        private String token;
+
+        @NotBlank(message = "新密碼不能為空")
+        @Size(min = 8, message = "密碼長度至少8位")
+        private String newPassword;
+
+        // getters and setters
+        public String getToken() { return token; }
+        public void setToken(String token) { this.token = token; }
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
+    }
+
+    public static class ChangePasswordRequest {
+        @NotBlank(message = "舊密碼不能為空")
+        private String oldPassword;
+
+        @NotBlank(message = "新密碼不能為空")
+        @Size(min = 8, message = "密碼長度至少8位")
+        private String newPassword;
+
+        // getters and setters
+        public String getOldPassword() { return oldPassword; }
+        public void setOldPassword(String oldPassword) { this.oldPassword = oldPassword; }
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
+    }
+}

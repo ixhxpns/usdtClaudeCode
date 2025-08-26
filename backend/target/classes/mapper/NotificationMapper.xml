@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.usdttrading.repository.NotificationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.usdttrading.entity.Notification">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="type" property="type" />
+        <result column="category" property="category" />
+        <result column="title" property="title" />
+        <result column="content" property="content" />
+        <result column="data" property="data" />
+        <result column="status" property="status" />
+        <result column="priority" property="priority" />
+        <result column="send_at" property="sendAt" />
+        <result column="delivered_at" property="deliveredAt" />
+        <result column="read_at" property="readAt" />
+        <result column="error_message" property="errorMessage" />
+        <result column="retry_count" property="retryCount" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="deleted" property="deleted" />
+        <result column="user_email" property="userEmail" />
+    </resultMap>
+
+    <!-- 通用查询SQL片段 -->
+    <sql id="selectNotificationWithUser">
+        SELECT n.*, u.email as user_email 
+        FROM notifications n 
+        LEFT JOIN users u ON n.user_id = u.id 
+        WHERE n.deleted = 0
+    </sql>
+
+    <!-- 查询条件SQL片段 -->
+    <sql id="whereConditions">
+        <where>
+            <if test="userId != null">
+                AND n.user_id = #{userId}
+            </if>
+            <if test="type != null and type != ''">
+                AND n.type = #{type}
+            </if>
+            <if test="category != null and category != ''">
+                AND n.category = #{category}
+            </if>
+            <if test="status != null and status != ''">
+                AND n.status = #{status}
+            </if>
+            <if test="priority != null and priority != ''">
+                AND n.priority = #{priority}
+            </if>
+            <if test="title != null and title != ''">
+                AND n.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="startTime != null">
+                AND n.created_at >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND n.created_at &lt;= #{endTime}
+            </if>
+            <if test="isSystemNotification != null">
+                <if test="isSystemNotification == true">
+                    AND n.user_id IS NULL
+                </if>
+                <if test="isSystemNotification == false">
+                    AND n.user_id IS NOT NULL
+                </if>
+            </if>
+        </where>
+    </sql>
+
+    <!-- 根据ID查询通知（包含用户信息） -->
+    <select id="selectById" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        AND n.id = #{id}
+    </select>
+
+    <!-- 分页查询通知列表 -->
+    <select id="selectNotificationList" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        <include refid="whereConditions" />
+        ORDER BY n.priority DESC, n.created_at DESC
+    </select>
+
+    <!-- 分页查询用户通知 -->
+    <select id="selectPageByUserId" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        AND n.user_id = #{userId}
+        ORDER BY n.created_at DESC
+    </select>
+
+    <!-- 查询用户未读通知数量 -->
+    <select id="countUnreadByUserId" resultType="java.lang.Long">
+        SELECT COUNT(*) 
+        FROM notifications 
+        WHERE user_id = #{userId} 
+        AND status IN ('pending', 'sent', 'delivered')
+        AND deleted = 0
+    </select>
+
+    <!-- 查询待发送的通知 -->
+    <select id="selectPendingNotifications" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        AND n.status = 'pending' 
+        AND n.send_at &lt;= NOW()
+        ORDER BY n.priority DESC, n.send_at ASC
+    </select>
+
+    <!-- 查询需要重试的通知 -->
+    <select id="selectRetryNotifications" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        AND n.status = 'failed' 
+        AND (n.retry_count IS NULL OR n.retry_count &lt; 3)
+        ORDER BY n.created_at ASC
+    </select>
+
+    <!-- 查询系统通知 -->
+    <select id="selectSystemNotifications" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        AND n.user_id IS NULL
+        ORDER BY n.created_at DESC
+    </select>
+
+    <!-- 查询用户指定类型的通知 -->
+    <select id="selectUserNotificationsByType" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        AND n.user_id = #{userId} 
+        AND n.type = #{type}
+        ORDER BY n.created_at DESC
+    </select>
+
+    <!-- 查询用户指定分类的通知 -->
+    <select id="selectUserNotificationsByCategory" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        AND n.user_id = #{userId} 
+        AND n.category = #{category}
+        ORDER BY n.created_at DESC
+    </select>
+
+    <!-- 查询紧急通知 -->
+    <select id="selectUrgentNotifications" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        AND n.priority = 'urgent'
+        <if test="startTime != null">
+            AND n.created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND n.created_at &lt;= #{endTime}
+        </if>
+        ORDER BY n.created_at DESC
+    </select>
+
+    <!-- 查询发送失败的通知 -->
+    <select id="selectFailedNotifications" resultMap="BaseResultMap">
+        <include refid="selectNotificationWithUser" />
+        AND n.status = 'failed'
+        <if test="startTime != null">
+            AND n.created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND n.created_at &lt;= #{endTime}
+        </if>
+        ORDER BY n.created_at DESC
+    </select>
+
+    <!-- 标记通知为已读 -->
+    <update id="markAsRead">
+        UPDATE notifications 
+        SET status = 'read', read_at = NOW(), updated_at = NOW()
+        WHERE id = #{id} AND user_id = #{userId} AND deleted = 0
+    </update>
+
+    <!-- 批量标记通知为已读 -->
+    <update id="markAllAsRead">
+        UPDATE notifications 
+        SET status = 'read', read_at = NOW(), updated_at = NOW()
+        WHERE user_id = #{userId} AND status != 'read' AND deleted = 0
+    </update>
+
+    <!-- 标记通知为已发送 -->
+    <update id="markAsSent">
+        UPDATE notifications 
+        SET status = 'sent', updated_at = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <!-- 标记通知为已送达 -->
+    <update id="markAsDelivered">
+        UPDATE notifications 
+        SET status = 'delivered', delivered_at = NOW(), updated_at = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <!-- 标记通知为发送失败 -->
+    <update id="markAsFailed">
+        UPDATE notifications 
+        SET status = 'failed', 
+            error_message = #{errorMessage}, 
+            retry_count = COALESCE(retry_count, 0) + 1,
+            updated_at = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <!-- 重置通知状态为待发送 -->
+    <update id="resetToPending">
+        UPDATE notifications 
+        SET status = 'pending', 
+            error_message = NULL,
+            updated_at = NOW()
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <!-- 统计通知数量 -->
+    <select id="countNotifications" resultType="java.lang.Long">
+        SELECT COUNT(*) 
+        FROM notifications n 
+        WHERE n.deleted = 0
+        <include refid="whereConditions" />
+    </select>
+
+    <!-- 统计按状态分组的通知数量 -->
+    <select id="countByStatus" resultType="java.util.Map">
+        SELECT n.status, COUNT(*) as count
+        FROM notifications n 
+        WHERE n.deleted = 0
+        <if test="startTime != null">
+            AND n.created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND n.created_at &lt;= #{endTime}
+        </if>
+        GROUP BY n.status
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计按类型分组的通知数量 -->
+    <select id="countByType" resultType="java.util.Map">
+        SELECT n.type, COUNT(*) as count
+        FROM notifications n 
+        WHERE n.deleted = 0
+        <if test="startTime != null">
+            AND n.created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND n.created_at &lt;= #{endTime}
+        </if>
+        GROUP BY n.type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计按分类分组的通知数量 -->
+    <select id="countByCategory" resultType="java.util.Map">
+        SELECT n.category, COUNT(*) as count
+        FROM notifications n 
+        WHERE n.deleted = 0
+        <if test="startTime != null">
+            AND n.created_at >= #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND n.created_at &lt;= #{endTime}
+        </if>
+        GROUP BY n.category
+        ORDER BY count DESC
+    </select>
+
+    <!-- 统计每日通知量 -->
+    <select id="countByDate" resultType="java.util.Map">
+        SELECT DATE(n.created_at) as date, COUNT(*) as count
+        FROM notifications n 
+        WHERE n.deleted = 0
+        AND n.created_at BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE(n.created_at)
+        ORDER BY date DESC
+    </select>
+
+    <!-- 统计用户通知概览 -->
+    <select id="getUserNotificationSummary" resultType="java.util.Map">
+        SELECT 
+            COUNT(*) as total_count,
+            COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_count,
+            COUNT(CASE WHEN status = 'sent' THEN 1 END) as sent_count,
+            COUNT(CASE WHEN status = 'delivered' THEN 1 END) as delivered_count,
+            COUNT(CASE WHEN status = 'read' THEN 1 END) as read_count,
+            COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count,
+            COUNT(CASE WHEN status IN ('pending', 'sent', 'delivered') THEN 1 END) as unread_count
+        FROM notifications 
+        WHERE user_id = #{userId} AND deleted = 0
+    </select>
+
+    <!-- 批量软删除通知 -->
+    <update id="batchDelete">
+        UPDATE notifications 
+        SET deleted = 1, updated_at = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+    <!-- 清理过期的已读通知 -->
+    <update id="cleanupReadNotifications">
+        UPDATE notifications 
+        SET deleted = 1, updated_at = NOW()
+        WHERE status = 'read' 
+        AND read_at &lt; #{expiredDate}
+        AND deleted = 0
+    </update>
+
+    <!-- 批量插入通知 -->
+    <insert id="batchInsert">
+        INSERT INTO notifications (
+            user_id, type, category, title, content, data, 
+            status, priority, send_at, created_at, updated_at
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.userId}, #{item.type}, #{item.category}, #{item.title}, #{item.content}, #{item.data},
+                #{item.status}, #{item.priority}, #{item.sendAt}, NOW(), NOW()
+            )
+        </foreach>
+    </insert>
+
+    <!-- 批量更新通知状态 -->
+    <update id="batchUpdateStatus">
+        UPDATE notifications 
+        SET status = #{status}, updated_at = NOW()
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        AND deleted = 0
+    </update>
+
+</mapper>

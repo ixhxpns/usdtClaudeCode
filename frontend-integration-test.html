@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前後端集成測試</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section { 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { 
+            background-color: #d4edda; 
+            border-color: #c3e6cb; 
+            color: #155724; 
+        }
+        .error { 
+            background-color: #f8d7da; 
+            border-color: #f5c6cb; 
+            color: #721c24; 
+        }
+        button { 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        button:hover { 
+            background-color: #0056b3; 
+        }
+        button:disabled { 
+            background-color: #6c757d; 
+            cursor: not-allowed; 
+        }
+        pre { 
+            background-color: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto; 
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+        .status-pending { background-color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 USDT交易平台前後端集成測試</h1>
+        <p>本測試頁面驗證前端HTTP配置與後端API的完整通信功能</p>
+    </div>
+
+    <div class="container">
+        <h2>📡 連接配置信息</h2>
+        <div class="test-section">
+            <h3>當前配置</h3>
+            <ul>
+                <li><strong>用戶前端:</strong> <span id="user-frontend-url">http://localhost:3001</span></li>
+                <li><strong>管理前端:</strong> <span id="admin-frontend-url">http://localhost:3000</span></li>
+                <li><strong>後端API:</strong> <span id="backend-api-url">http://localhost:8085</span></li>
+                <li><strong>API路徑前綴:</strong> <span id="api-prefix">/api/api</span></li>
+                <li><strong>Nginx代理:</strong> <span id="nginx-url">http://localhost:80</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🏥 健康檢查測試</h2>
+        <div class="test-section">
+            <button onclick="testHealthCheck()">測試後端健康狀態</button>
+            <div id="health-result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔐 認證系統測試</h2>
+        <div class="test-section">
+            <h3>登錄測試</h3>
+            <input type="email" id="login-email" placeholder="測試郵箱" value="test@example.com">
+            <input type="password" id="login-password" placeholder="測試密碼" value="testpass123">
+            <button onclick="testLogin()">測試登錄</button>
+            <div id="login-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>註冊測試</h3>
+            <input type="text" id="register-username" placeholder="用戶名" value="testuser">
+            <input type="email" id="register-email" placeholder="郵箱" value="test@example.com">
+            <input type="password" id="register-password" placeholder="密碼" value="testpass123">
+            <button onclick="testRegister()">測試註冊</button>
+            <div id="register-result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>💰 交易功能測試</h2>
+        <div class="test-section">
+            <button onclick="testPriceAPI()">測試價格API</button>
+            <div id="price-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <button onclick="testWalletAPI()">測試錢包API</button>
+            <div id="wallet-result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📄 文件系統測試</h2>
+        <div class="test-section">
+            <input type="file" id="file-upload" accept="image/*,.pdf,.doc,.docx">
+            <button onclick="testFileUpload()">測試文件上傳</button>
+            <div id="file-upload-result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🚨 錯誤處理測試</h2>
+        <div class="test-section">
+            <button onclick="testErrorHandling()">測試錯誤處理</button>
+            <div id="error-handling-result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🌐 CORS配置測試</h2>
+        <div class="test-section">
+            <button onclick="testCORS()">測試跨域請求</button>
+            <div id="cors-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // API配置
+        const API_BASE_URL = 'http://localhost:8085/api/api';
+        let authToken = null;
+
+        // HTTP客戶端配置 (模擬前端http.ts)
+        const httpClient = {
+            async request(method, url, options = {}) {
+                const config = {
+                    method: method.toUpperCase(),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Frontend-Integration-Test',
+                        'X-Client-Version': '1.0.0',
+                        'X-Request-ID': generateRequestId(),
+                        ...options.headers
+                    },
+                    ...options
+                };
+
+                if (authToken) {
+                    config.headers.Authorization = `Bearer ${authToken}`;
+                }
+
+                if (config.method !== 'GET' && options.body) {
+                    config.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}${url}`, config);
+                    const data = await response.json();
+                    
+                    return {
+                        success: response.ok,
+                        status: response.status,
+                        data: data,
+                        response: response
+                    };
+                } catch (error) {
+                    return {
+                        success: false,
+                        status: 0,
+                        error: error.message,
+                        data: null
+                    };
+                }
+            }
+        };
+
+        function generateRequestId() {
+            return `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        function displayResult(elementId, result, title = '') {
+            const element = document.getElementById(elementId);
+            const status = result.success ? 'success' : 'error';
+            const statusIcon = result.success ? '✅' : '❌';
+            
+            element.innerHTML = `
+                <div class="${status}">
+                    <h4>${statusIcon} ${title}</h4>
+                    <p><strong>狀態:</strong> ${result.status} ${result.success ? 'SUCCESS' : 'ERROR'}</p>
+                    <pre>${JSON.stringify(result.data || result.error, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        // 測試函數
+        async function testHealthCheck() {
+            console.log('🏥 測試健康檢查...');
+            try {
+                const result = await httpClient.request('GET', '/../../actuator/health');
+                displayResult('health-result', result, '健康檢查結果');
+            } catch (error) {
+                displayResult('health-result', { success: false, error: error.message }, '健康檢查失敗');
+            }
+        }
+
+        async function testLogin() {
+            console.log('🔐 測試登錄功能...');
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            const result = await httpClient.request('POST', '/auth/login', {
+                body: { email, password }
+            });
+            
+            if (result.success && result.data.access_token) {
+                authToken = result.data.access_token;
+            }
+            
+            displayResult('login-result', result, '登錄測試結果');
+        }
+
+        async function testRegister() {
+            console.log('📝 測試註冊功能...');
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            
+            const result = await httpClient.request('POST', '/auth/register', {
+                body: { username, email, password }
+            });
+            
+            displayResult('register-result', result, '註冊測試結果');
+        }
+
+        async function testPriceAPI() {
+            console.log('💰 測試價格API...');
+            const result = await httpClient.request('GET', '/price/current');
+            displayResult('price-result', result, '價格API測試結果');
+        }
+
+        async function testWalletAPI() {
+            console.log('👛 測試錢包API...');
+            if (!authToken) {
+                displayResult('wallet-result', { success: false, error: '需要先登錄' }, '錢包API測試失敗');
+                return;
+            }
+            
+            const result = await httpClient.request('GET', '/wallet/balance');
+            displayResult('wallet-result', result, '錢包API測試結果');
+        }
+
+        async function testFileUpload() {
+            console.log('📄 測試文件上傳...');
+            const fileInput = document.getElementById('file-upload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                displayResult('file-upload-result', { success: false, error: '請選擇文件' }, '文件上傳失敗');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const result = await httpClient.request('POST', '/files/upload', {
+                headers: { 'Content-Type': undefined }, // 讓瀏覽器自動設置
+                body: formData
+            });
+            
+            displayResult('file-upload-result', result, '文件上傳測試結果');
+        }
+
+        async function testErrorHandling() {
+            console.log('🚨 測試錯誤處理...');
+            
+            // 測試404錯誤
+            const result404 = await httpClient.request('GET', '/nonexistent');
+            
+            // 測試400錯誤
+            const result400 = await httpClient.request('POST', '/auth/login', {
+                body: { invalid: 'data' }
+            });
+            
+            // 測試401錯誤
+            const result401 = await httpClient.request('GET', '/auth/me', {
+                headers: { Authorization: 'Bearer invalid-token' }
+            });
+            
+            displayResult('error-handling-result', {
+                success: true,
+                data: {
+                    test404: result404,
+                    test400: result400,
+                    test401: result401
+                }
+            }, '錯誤處理測試結果');
+        }
+
+        async function testCORS() {
+            console.log('🌐 測試CORS配置...');
+            
+            const result = await httpClient.request('OPTIONS', '/auth/login', {
+                headers: {
+                    'Access-Control-Request-Method': 'POST',
+                    'Access-Control-Request-Headers': 'Content-Type,Authorization'
+                }
+            });
+            
+            displayResult('cors-result', result, 'CORS測試結果');
+        }
+
+        // 頁面加載時自動執行基本測試
+        window.onload = function() {
+            console.log('🚀 前後端集成測試頁面加載完成');
+            testHealthCheck();
+        };
+    </script>
+</body>
+</html>

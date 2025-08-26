@@ -1,0 +1,347 @@
+@import 'variables.scss';
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+// Global styles for USDT Trading Platform - User Portal
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-normal;
+  color: $text-primary;
+  background-color: $bg-primary;
+  line-height: $line-height-normal;
+}
+
+// Dark mode styles
+.dark {
+  body {
+    background-color: $bg-dark;
+    color: $text-white;
+  }
+}
+
+// Layout utilities
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+
+  @media (min-width: $breakpoint-sm) {
+    padding: 0 1.5rem;
+  }
+
+  @media (min-width: $breakpoint-lg) {
+    padding: 0 2rem;
+  }
+}
+
+.page-content {
+  min-height: calc(100vh - #{$header-height} - #{$footer-height});
+  padding: $spacing-lg 0;
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-gray;
+  border-radius: $border-radius-sm;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $border-medium;
+  border-radius: $border-radius-sm;
+  
+  &:hover {
+    background: $border-dark;
+  }
+}
+
+// Focus styles
+*:focus {
+  outline: 2px solid $primary-color;
+  outline-offset: 2px;
+}
+
+// Button base styles
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid transparent;
+  border-radius: $border-radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all $transition-normal;
+  user-select: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.btn-primary {
+    background-color: $primary-color;
+    border-color: $primary-color;
+    color: $text-white;
+
+    &:hover:not(:disabled) {
+      background-color: $primary-dark;
+      border-color: $primary-dark;
+    }
+  }
+
+  &.btn-secondary {
+    background-color: transparent;
+    border-color: $border-medium;
+    color: $text-primary;
+
+    &:hover:not(:disabled) {
+      background-color: $bg-gray;
+    }
+  }
+
+  &.btn-success {
+    background-color: $success-color;
+    border-color: $success-color;
+    color: $text-white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($success-color, 10%);
+    }
+  }
+
+  &.btn-danger {
+    background-color: $error-color;
+    border-color: $error-color;
+    color: $text-white;
+
+    &:hover:not(:disabled) {
+      background-color: darken($error-color, 10%);
+    }
+  }
+
+  &.btn-sm {
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+  }
+
+  &.btn-lg {
+    padding: $spacing-md $spacing-lg;
+    font-size: $font-size-lg;
+  }
+}
+
+// Card component
+.card {
+  background: $bg-primary;
+  border: 1px solid $border-light;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+
+  .dark & {
+    background: $bg-dark;
+    border-color: $border-dark;
+  }
+
+  &.card-hoverable {
+    transition: all $transition-normal;
+
+    &:hover {
+      box-shadow: $shadow-md;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.card-header {
+  padding: $spacing-lg;
+  border-bottom: 1px solid $border-light;
+  background: $bg-secondary;
+
+  .dark & {
+    background: lighten($bg-dark, 3%);
+    border-color: $border-dark;
+  }
+}
+
+.card-body {
+  padding: $spacing-lg;
+}
+
+.card-footer {
+  padding: $spacing-md $spacing-lg;
+  border-top: 1px solid $border-light;
+  background: $bg-secondary;
+
+  .dark & {
+    background: lighten($bg-dark, 3%);
+    border-color: $border-dark;
+  }
+}
+
+// Form styles
+.form-group {
+  margin-bottom: $spacing-md;
+
+  label {
+    display: block;
+    margin-bottom: $spacing-xs;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $text-primary;
+  }
+
+  .form-control {
+    display: block;
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid $border-medium;
+    border-radius: $border-radius-md;
+    font-size: $font-size-base;
+    line-height: $line-height-normal;
+    background-color: $bg-primary;
+    color: $text-primary;
+    transition: border-color $transition-normal;
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+    }
+
+    &.is-invalid {
+      border-color: $error-color;
+    }
+
+    &.is-valid {
+      border-color: $success-color;
+    }
+  }
+
+  .form-error {
+    margin-top: $spacing-xs;
+    font-size: $font-size-sm;
+    color: $error-color;
+  }
+
+  .form-help {
+    margin-top: $spacing-xs;
+    font-size: $font-size-sm;
+    color: $text-secondary;
+  }
+}
+
+// Utility classes
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-primary { color: $primary-color; }
+.text-success { color: $success-color; }
+.text-warning { color: $warning-color; }
+.text-danger { color: $error-color; }
+.text-muted { color: $text-muted; }
+
+.bg-primary { background-color: $primary-color; }
+.bg-success { background-color: $success-color; }
+.bg-warning { background-color: $warning-color; }
+.bg-danger { background-color: $error-color; }
+
+.border-radius-sm { border-radius: $border-radius-sm; }
+.border-radius-md { border-radius: $border-radius-md; }
+.border-radius-lg { border-radius: $border-radius-lg; }
+
+.shadow-sm { box-shadow: $shadow-sm; }
+.shadow-md { box-shadow: $shadow-md; }
+.shadow-lg { box-shadow: $shadow-lg; }
+
+// Trading specific styles
+.price-up {
+  color: $price-up !important;
+}
+
+.price-down {
+  color: $price-down !important;
+}
+
+.price-neutral {
+  color: $price-neutral !important;
+}
+
+// Animations
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.slide-in-up {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.slide-in-down {
+  animation: slideInDown 0.3s ease-out;
+}
+
+// Responsive utilities
+@media (max-width: $breakpoint-md) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: $breakpoint-md) {
+  .hidden-desktop {
+    display: none !important;
+  }
+}
