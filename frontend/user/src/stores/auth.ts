@@ -63,7 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await AuthAPI.login(encryptedCredentials)
       
       // 保存认证信息
-      setToken(response.access_token)
+      setToken(response.accessToken)
       setUserInfo(response.user)
       user.value = response.user
       
@@ -101,18 +101,17 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await AuthAPI.register(encryptedData)
       
       // 自动登录
-      setToken(response.access_token)
+      setToken(response.accessToken)
       setUserInfo(response.user)
       user.value = response.user
       
       // 通知认证状态变化
       notifyAuthStateChange(true)
       
-      ElMessage.success('注册成功')
+      // 移除這裡的ElMessage，讓組件處理成功消息
       return response
     } catch (error: any) {
-      const message = error.message || '注册失败'
-      ElMessage.error(message)
+      // 移除這裡的ElMessage，讓組件處理錯誤消息
       throw error
     } finally {
       isLoading.value = false

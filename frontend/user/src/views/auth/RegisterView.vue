@@ -153,14 +153,14 @@
       </el-form-item>
 
       <!-- 邮箱验证码字段 -->
-      <el-form-item prop="verification_code" class="form-group">
+      <el-form-item prop="verificationCode" class="form-group">
         <label class="form-label">
           邮箱验证码
           <span class="text-red-500">*</span>
         </label>
         <div class="flex space-x-2">
           <VerificationCodeInput
-            v-model="registerForm.verification_code"
+            v-model="registerForm.verificationCode"
             :length="6"
             :disabled="authStore.isLoading"
             :error="verificationError"
@@ -348,13 +348,13 @@ const socialProviders = [
 ]
 
 // Reactive data
-const registerForm = reactive<RegisterRequest & { username: string }>({
+const registerForm = reactive<RegisterRequest>({
   username: '',
   email: '',
   password: '',
   confirm_password: '',
   phone: '',
-  verification_code: '',
+  verificationCode: '',
   agree_terms: false
 })
 
@@ -364,7 +364,7 @@ const isFormValid = computed(() => {
          registerForm.email &&
          registerForm.password &&
          registerForm.confirm_password &&
-         registerForm.verification_code &&
+         registerForm.verificationCode &&
          registerForm.agree_terms &&
          usernameStatus.value === 'valid' &&
          emailStatus.value === 'valid' &&
@@ -440,7 +440,7 @@ const registerRules = {
       trigger: 'blur' 
     }
   ],
-  verification_code: [
+  verificationCode: [
     { required: true, message: '请输入验证码', trigger: 'blur' },
     { len: 6, message: '验证码长度为6位', trigger: 'blur' }
   ],
@@ -477,9 +477,10 @@ const checkUsernameAvailability = async () => {
       usernameStatus.value = 'invalid'
       usernameMessage.value = '用户名已被使用'
     }
-  } catch (error) {
+  } catch (error: any) {
     usernameStatus.value = 'invalid'
-    usernameMessage.value = '检查用户名可用性失败'
+    usernameMessage.value = error.message || '检查用户名可用性失败'
+    console.error('檢查用戶名可用性失敗:', error)
   } finally {
     checkingUsername.value = false
   }
@@ -504,9 +505,10 @@ const checkEmailAvailability = async () => {
       emailStatus.value = 'invalid'
       emailMessage.value = '邮箱已被注册'
     }
-  } catch (error) {
+  } catch (error: any) {
     emailStatus.value = 'invalid'
-    emailMessage.value = '检查邮箱可用性失败'
+    emailMessage.value = error.message || '检查邮箱可用性失败'
+    console.error('檢查郵箱可用性失敗:', error)
   } finally {
     checkingEmail.value = false
   }
@@ -514,19 +516,31 @@ const checkEmailAvailability = async () => {
 
 // 发送验证码
 const sendVerificationCode = async () => {
-  if (!registerForm.email || emailStatus.value !== 'valid') {
-    ElMessage.warning('请先输入有效的邮箱地址')
+  if (!registerForm.email) {
+    ElMessage.warning('请先输入邮箱地址')
+    return
+  }
+
+  if (!validateEmail(registerForm.email)) {
+    ElMessage.warning('请输入有效的邮箱地址')
+    return
+  }
+
+  if (emailStatus.value !== 'valid') {
+    ElMessage.warning('请确认邮箱可用后再发送验证码')
     return
   }
 
   try {
     sendingCode.value = true
-    await AuthAPI.sendEmailVerification({ email: registerForm.email })
-    ElMessage.success('验证码已发送到您的邮箱')
+    const response = await AuthAPI.sendEmailVerification({ email: registerForm.email })
+    ElMessage.success(response.message || '验证码已发送到您的邮箱')
     verificationError.value = ''
   } catch (error: any) {
-    ElMessage.error(error.message || '发送验证码失败')
-    verificationError.value = error.message || '发送验证码失败'
+    const errorMessage = error.message || '发送验证码失败'
+    ElMessage.error(errorMessage)
+    verificationError.value = errorMessage
+    console.error('發送驗證碼失敗:', error)
   } finally {
     sendingCode.value = false
   }
@@ -534,13 +548,16 @@ const sendVerificationCode = async () => {
 
 // 验证码输入完成
 const handleVerificationCodeComplete = (code: string) => {
-  registerForm.verification_code = code
+  registerForm.verificationCode = code
   verificationError.value = ''
 }
 
 // 处理注册
 const handleRegister = async () => {
   if (!registerFormRef.value) return
+  
+  // 防止重複提交
+  if (authStore.isLoading) return
 
   try {
     // 表单验证
@@ -558,20 +575,18 @@ const handleRegister = async () => {
     }
 
     // 注册
-    const { username, ...registerData } = registerForm
-    await authStore.register(registerData)
+    const response = await authStore.register(registerForm)
     
-    ElMessage.success('注册成功，欢迎加入我们！')
+    // 由於後端返回了message，使用後端的成功消息
+    ElMessage.success(response.message || '注册成功，欢迎加入我们！')
     
-    // 注册成功，跳转到仪表板或邮箱验证页面
-    if (!authStore.isEmailVerified) {
-      router.push('/verify-email')
-    } else {
-      router.push('/dashboard')
-    }
+    // 注册成功，跳转到仪表板（因為後端已經預驗證郵箱）
+    router.push('/dashboard')
   } catch (error: any) {
     console.error('注册失败:', error)
-    verificationError.value = error.message || '注册失败'
+    const errorMessage = error.message || '注册失败，请重试'
+    verificationError.value = errorMessage
+    ElMessage.error(errorMessage)
   }
 }
 

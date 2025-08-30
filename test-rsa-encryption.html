@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSA加密系统测试</title>
+    <script src="https://unpkg.com/jsencrypt@3.3.2/bin/jsencrypt.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            background: #f0f0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        .key-info {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RSA加密系统测试工具</h1>
+        <p>此工具用于测试前后端RSA加密解密功能的兼容性</p>
+
+        <div class="test-section">
+            <h2>1. 服务器公钥获取测试</h2>
+            <button onclick="fetchPublicKey()">获取服务器公钥</button>
+            <div id="publicKeyResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. 密码加密测试</h2>
+            <input type="text" id="testPassword" placeholder="输入测试密码" value="TestPassword123!">
+            <button onclick="encryptPassword()">加密密码</button>
+            <div id="encryptResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. 登录接口测试</h2>
+            <input type="text" id="testEmail" placeholder="邮箱地址" value="admin@example.com">
+            <input type="text" id="testLoginPassword" placeholder="登录密码" value="TestPassword123!">
+            <button onclick="testLogin()">测试登录</button>
+            <div id="loginResult" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. 系统状态检查</h2>
+            <button onclick="checkSystemStatus()">检查系统状态</button>
+            <div id="statusResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let cachedPublicKey = null;
+        let rsaEncrypt = null;
+
+        // 获取服务器公钥
+        async function fetchPublicKey() {
+            const resultDiv = document.getElementById('publicKeyResult');
+            try {
+                resultDiv.innerHTML = '<div class="info">正在获取公钥...</div>';
+                
+                const response = await fetch('/api/auth/public-key');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message || '获取公钥失败');
+                }
+                
+                const publicKey = data.data.publicKey;
+                const pemKey = `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`;
+                
+                cachedPublicKey = pemKey;
+                rsaEncrypt = new JSEncrypt();
+                rsaEncrypt.setPublicKey(pemKey);
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ 公钥获取成功</div>
+                    <div class="key-info">密钥类型: ${data.data.keyType}</div>
+                    <div class="key-info">密钥大小: ${data.data.keySize} bits</div>
+                    <div class="key-info">算法: ${data.data.algorithm}</div>
+                    <textarea readonly>${pemKey}</textarea>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 公钥获取失败: ${error.message}</div>`;
+                console.error('获取公钥失败:', error);
+            }
+        }
+
+        // 加密密码测试
+        async function encryptPassword() {
+            const password = document.getElementById('testPassword').value;
+            const resultDiv = document.getElementById('encryptResult');
+            
+            if (!password) {
+                resultDiv.innerHTML = '<div class="error">请输入测试密码</div>';
+                return;
+            }
+            
+            try {
+                if (!rsaEncrypt) {
+                    await fetchPublicKey();
+                    if (!rsaEncrypt) {
+                        throw new Error('无法获取加密实例');
+                    }
+                }
+                
+                resultDiv.innerHTML = '<div class="info">正在加密...</div>';
+                
+                const encrypted = rsaEncrypt.encrypt(password);
+                if (!encrypted) {
+                    throw new Error('加密失败');
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✅ 密码加密成功</div>
+                    <div class="key-info">原始密码: ${password}</div>
+                    <div class="key-info">加密后长度: ${encrypted.length} 字符</div>
+                    <textarea readonly>${encrypted}</textarea>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 密码加密失败: ${error.message}</div>`;
+                console.error('加密失败:', error);
+            }
+        }
+
+        // 测试登录
+        async function testLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testLoginPassword').value;
+            const resultDiv = document.getElementById('loginResult');
+            
+            if (!email || !password) {
+                resultDiv.innerHTML = '<div class="error">请输入邮箱和密码</div>';
+                return;
+            }
+            
+            try {
+                if (!rsaEncrypt) {
+                    await fetchPublicKey();
+                    if (!rsaEncrypt) {
+                        throw new Error('无法获取加密实例');
+                    }
+                }
+                
+                resultDiv.innerHTML = '<div class="info">正在测试登录...</div>';
+                
+                const encryptedPassword = rsaEncrypt.encrypt(password);
+                if (!encryptedPassword) {
+                    throw new Error('密码加密失败');
+                }
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: encryptedPassword
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ 登录测试成功</div>
+                        <div class="key-info">用户ID: ${data.data.user.id}</div>
+                        <div class="key-info">用户邮箱: ${data.data.user.email}</div>
+                        <div class="key-info">Token长度: ${data.data.accessToken.length} 字符</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 登录失败: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ 登录测试失败: ${error.message}</div>`;
+                console.error('登录测试失败:', error);
+            }
+        }
+
+        // 检查系统状态
+        async function checkSystemStatus() {
+            const resultDiv = document.getElementById('statusResult');
+            resultDiv.innerHTML = '<div class="info">正在检查系统状态...</div>';
+            
+            const checks = [];
+            
+            // 检查公钥API
+            try {
+                const response = await fetch('/api/auth/public-key');
+                const data = await response.json();
+                checks.push({
+                    name: '公钥API',
+                    status: data.success ? 'success' : 'error',
+                    message: data.success ? '正常' : data.message
+                });
+            } catch (error) {
+                checks.push({
+                    name: '公钥API',
+                    status: 'error',
+                    message: error.message
+                });
+            }
+            
+            // 检查JSEncrypt库
+            try {
+                const testEncrypt = new JSEncrypt();
+                checks.push({
+                    name: 'JSEncrypt库',
+                    status: 'success',
+                    message: '加载正常'
+                });
+            } catch (error) {
+                checks.push({
+                    name: 'JSEncrypt库',
+                    status: 'error',
+                    message: '加载失败'
+                });
+            }
+            
+            // 检查网络连接
+            try {
+                const response = await fetch('/api/auth/public-key');
+                checks.push({
+                    name: '网络连接',
+                    status: response.ok ? 'success' : 'error',
+                    message: response.ok ? '连接正常' : `HTTP ${response.status}`
+                });
+            } catch (error) {
+                checks.push({
+                    name: '网络连接',
+                    status: 'error',
+                    message: '连接失败'
+                });
+            }
+            
+            let html = '<div class="info">系统状态检查结果:</div>';
+            checks.forEach(check => {
+                const className = check.status === 'success' ? 'success' : 'error';
+                const icon = check.status === 'success' ? '✅' : '❌';
+                html += `<div class="${className}">${icon} ${check.name}: ${check.message}</div>`;
+            });
+            
+            resultDiv.innerHTML = html;
+        }
+
+        // 页面加载时自动检查状态
+        window.onload = function() {
+            checkSystemStatus();
+        };
+    </script>
+</body>
+</html>

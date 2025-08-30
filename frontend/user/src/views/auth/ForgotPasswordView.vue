@@ -2,7 +2,7 @@
   <AuthLayout
     form-title="忘记密码"
     form-subtitle="请输入您的邮箱地址，我们将发送重置密码的链接"
-    :loading="isLoading"
+    :loading="loading"
     loading-text="发送中，请稍候..."
   >
     <!-- 导航链接 -->

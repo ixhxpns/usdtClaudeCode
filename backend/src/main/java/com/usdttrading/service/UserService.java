@@ -13,13 +13,16 @@ import com.usdttrading.repository.UserMapper;
 import com.usdttrading.repository.UserProfileMapper;
 import com.usdttrading.repository.RoleMapper;
 import com.usdttrading.security.PasswordEncoder;
+import com.usdttrading.security.RSAUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 用戶服務類
@@ -37,16 +40,31 @@ public class UserService {
     private final UserProfileMapper userProfileMapper;
     private final RoleMapper roleMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RSAUtil rsaUtil;
     private final AuditLogService auditLogService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     /**
      * 用戶註冊
      */
     @Transactional
     public User register(String email, String password, String phone) {
+        return register(null, email, password, phone);
+    }
+
+    /**
+     * 用戶註冊（包含用戶名）
+     */
+    @Transactional
+    public User register(String username, String email, String password, String phone) {
         // 檢查郵箱是否已存在
         if (existsByEmail(email)) {
             throw BusinessException.User.EMAIL_ALREADY_EXISTS;
+        }
+
+        // 檢查用戶名是否已存在（如果提供）
+        if (StrUtil.isNotBlank(username) && existsByUsername(username)) {
+            throw new BusinessException("用戶名已被使用");
         }
 
         // 檢查手機號是否已存在
@@ -61,6 +79,7 @@ public class UserService {
 
         // 創建用戶
         User user = new User();
+        user.setUsername(username);
         user.setEmail(email);
         user.setPhone(phone);
         user.setStatus(UserStatus.INACTIVE);
@@ -78,6 +97,9 @@ public class UserService {
 
         userMapper.insert(user);
 
+        // 清除緩存
+        clearUserExistenceCache(email, phone, username);
+
         // 創建用戶檔案
         UserProfile profile = new UserProfile();
         profile.setUserId(user.getId());
@@ -89,7 +111,7 @@ public class UserService {
         auditLogService.logUserAction(user.getId(), "user_register", "users", user.getId().toString(), 
                 "用戶註冊", null, user);
 
-        log.info("用戶註冊成功: {}", email);
+        log.info("用戶註冊成功: {} ({})", email, username != null ? username : "無用戶名");
         return user;
     }
 
@@ -139,6 +161,25 @@ public class UserService {
     }
 
     /**
+     * 用戶登錄（支持RSA加密密碼）
+     */
+    @Transactional
+    public User loginWithRSADecryption(String email, String encryptedPassword, String clientIp, String userAgent) {
+        try {
+            // RSA解密密码
+            String decryptedPassword = rsaUtil.decryptWithPrivateKey(encryptedPassword);
+            log.debug("RSA解密成功，邮箱: {}", email);
+            
+            // 调用普通登录方法
+            return login(email, decryptedPassword, clientIp, userAgent);
+            
+        } catch (Exception e) {
+            log.error("RSA解密登錄失敗，邮箱: {}, 错误: {}", email, e.getMessage());
+            throw new BusinessException("DECRYPT_FAILED", "密碼解密失敗，請重試");
+        }
+    }
+
+    /**
      * 用戶登出
      */
     public void logout() {
@@ -174,23 +215,93 @@ public class UserService {
 
     /**
      * 檢查郵箱是否存在
+     * 使用緩存優化性能
      */
     public boolean existsByEmail(String email) {
+        String cacheKey = "user_exists:email:" + email;
+        Boolean cached = (Boolean) redisTemplate.opsForValue().get(cacheKey);
+        
+        if (cached != null) {
+            return cached;
+        }
+        
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("email", email);
-        return userMapper.selectCount(wrapper) > 0;
+        boolean exists = userMapper.selectCount(wrapper) > 0;
+        
+        // 緩存結果，過期時間5分鐘
+        redisTemplate.opsForValue().set(cacheKey, exists, 5, TimeUnit.MINUTES);
+        
+        return exists;
     }
 
     /**
      * 檢查手機號是否存在
+     * 使用緩存優化性能
      */
     public boolean existsByPhone(String phone) {
         if (StrUtil.isBlank(phone)) {
             return false;
         }
+        
+        String cacheKey = "user_exists:phone:" + phone;
+        Boolean cached = (Boolean) redisTemplate.opsForValue().get(cacheKey);
+        
+        if (cached != null) {
+            return cached;
+        }
+        
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("phone", phone);
-        return userMapper.selectCount(wrapper) > 0;
+        boolean exists = userMapper.selectCount(wrapper) > 0;
+        
+        // 緩存結果，過期時間5分鐘
+        redisTemplate.opsForValue().set(cacheKey, exists, 5, TimeUnit.MINUTES);
+        
+        return exists;
+    }
+
+    /**
+     * 檢查用戶名是否存在
+     * 使用緩存優化性能
+     */
+    public boolean existsByUsername(String username) {
+        if (StrUtil.isBlank(username)) {
+            return false;
+        }
+        
+        String cacheKey = "user_exists:username:" + username;
+        Boolean cached = (Boolean) redisTemplate.opsForValue().get(cacheKey);
+        
+        if (cached != null) {
+            return cached;
+        }
+        
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("username", username);
+        boolean exists = userMapper.selectCount(wrapper) > 0;
+        
+        // 緩存結果，過期時間5分鐘
+        redisTemplate.opsForValue().set(cacheKey, exists, 5, TimeUnit.MINUTES);
+        
+        return exists;
+    }
+
+    /**
+     * 激活用戶並設置郵箱已驗證
+     */
+    @Transactional
+    public void activateUser(Long userId) {
+        User user = getById(userId);
+        user.setStatus(UserStatus.ACTIVE);
+        user.setEmailVerified(true);
+        userMapper.updateById(user);
+
+        // 記錄審計日誌
+        auditLogService.logUserAction(userId, "activate_user", "users", userId.toString(),
+                "用戶激活", null, null);
+
+        log.info("用戶激活成功: {}", userId);
     }
 
     /**
@@ -327,5 +438,20 @@ public class UserService {
         user.setLoginAttempts(0);
         user.setLockedUntil(null);
         userMapper.updateById(user);
+    }
+
+    /**
+     * 清除用戶存在性緩存
+     */
+    private void clearUserExistenceCache(String email, String phone, String username) {
+        if (StrUtil.isNotBlank(email)) {
+            redisTemplate.delete("user_exists:email:" + email);
+        }
+        if (StrUtil.isNotBlank(phone)) {
+            redisTemplate.delete("user_exists:phone:" + phone);
+        }
+        if (StrUtil.isNotBlank(username)) {
+            redisTemplate.delete("user_exists:username:" + username);
+        }
     }
 }

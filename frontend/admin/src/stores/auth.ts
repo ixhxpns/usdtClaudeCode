@@ -66,9 +66,10 @@ export const useAuthStore = defineStore('adminAuth', () => {
       isLoading.value = true
       
       // 加密密码
+      const encryptedPassword = await encryptSensitiveData(credentials.password)
       const encryptedCredentials = {
         ...credentials,
-        password: encryptSensitiveData(credentials.password)
+        password: encryptedPassword
       }
 
       const response = await AdminHttpClient.post<AdminLoginResponse>('/admin/auth/login', encryptedCredentials)
@@ -139,7 +140,7 @@ export const useAuthStore = defineStore('adminAuth', () => {
   const refreshAdminInfo = async () => {
     try {
       isLoading.value = true
-      const response = await AdminHttpClient.get<Admin>('/admin/profile')
+      const response = await AdminHttpClient.get<Admin>('/admin/auth/me')
       
       setUserInfo(response)
       admin.value = response
@@ -161,9 +162,14 @@ export const useAuthStore = defineStore('adminAuth', () => {
       isLoading.value = true
       
       // 加密密码
+      const [encryptedCurrentPassword, encryptedNewPassword] = await Promise.all([
+        encryptSensitiveData(currentPassword),
+        encryptSensitiveData(newPassword)
+      ])
+      
       const encryptedData = {
-        current_password: encryptSensitiveData(currentPassword),
-        new_password: encryptSensitiveData(newPassword)
+        current_password: encryptedCurrentPassword,
+        new_password: encryptedNewPassword
       }
 
       await AdminHttpClient.post('/admin/auth/change-password', encryptedData)
@@ -261,7 +267,7 @@ export const useAuthStore = defineStore('adminAuth', () => {
   // 验证会话有效性
   const validateSession = async () => {
     try {
-      await AdminHttpClient.get('/admin/auth/validate')
+      await AdminHttpClient.get('/admin/auth/me')
       return true
     } catch (error) {
       // 会话无效，清除本地数据

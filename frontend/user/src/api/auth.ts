@@ -43,8 +43,8 @@ export class AuthAPI {
   /**
    * 刷新访问令牌
    */
-  static async refreshToken(): Promise<{ access_token: string; expires_in: number }> {
-    return await HttpClient.post<{ access_token: string; expires_in: number }>('/auth/refresh')
+  static async refreshToken(): Promise<{ accessToken: string; expiresIn: number }> {
+    return await HttpClient.post<{ accessToken: string; expiresIn: number }>('/auth/refresh')
   }
 
   /**
@@ -57,8 +57,16 @@ export class AuthAPI {
   /**
    * 发送邮箱验证码
    */
-  static async sendEmailVerification(data?: EmailVerificationRequest): Promise<void> {
-    return await HttpClient.post<void>('/auth/send-email-verification', data)
+  static async sendEmailVerification(data: EmailVerificationRequest): Promise<{
+    message: string
+    email: string
+    expiryTime: number
+  }> {
+    return await HttpClient.post<{
+      message: string
+      email: string
+      expiryTime: number
+    }>('/auth/send-email-verification', data)
   }
 
   /**

@@ -54,6 +54,34 @@ public class EmailService {
     }
 
     /**
+     * 發送預註冊驗證郵件
+     */
+    public CompletableFuture<Void> sendPreRegistrationVerificationEmail(String to, String verificationCode) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                Context context = new Context();
+                context.setVariable("appName", appName);
+                context.setVariable("verificationCode", verificationCode);
+                context.setVariable("email", to);
+                context.setVariable("supportEmail", supportEmail);
+                context.setVariable("currentYear", LocalDateTime.now().getYear());
+                context.setVariable("expiryTime", "10分鐘");
+
+                String htmlContent = templateEngine.process("pre-registration-verification", context);
+                
+                sendHtmlEmail(to, appName + " - 註冊驗證碼", htmlContent, null, "PRE_REGISTER_VERIFICATION");
+                
+                log.info("預註冊驗證郵件已發送: {}", to);
+                
+            } catch (Exception e) {
+                log.error("發送預註冊驗證郵件失敗: {} - 錯誤: {}", to, e.getMessage());
+                auditLogService.logEmailEvent(null, "PRE_REGISTER_VERIFICATION_FAILED", to, 
+                        "預註冊驗證郵件發送失敗", false, e.getMessage());
+            }
+        });
+    }
+
+    /**
      * 發送註冊驗證郵件
      */
     public CompletableFuture<Void> sendVerificationEmail(String to, Long userId, String verificationCode) {

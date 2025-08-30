@@ -4,9 +4,28 @@ import { useAuthStore } from '@/stores/auth'
 import { ApiResponse, ApiErrorResponse } from '@/types/api'
 import { getToken, removeToken } from '@/utils/auth'
 
+// 验证配置函数
+function validateConfig(): string {
+  const baseURL = import.meta.env.VITE_API_BASE_URL || '/api'
+  
+  // 检查是否有重复的API路径前缀
+  if (baseURL.includes('/api/api')) {
+    console.error('❌ HTTP配置错误: 检测到双重API路径前缀', baseURL)
+    console.warn('⚙️ 建议修改 VITE_API_BASE_URL 为 /api')
+  }
+  
+  // 检查基础URL格式
+  if (!baseURL.startsWith('/') && !baseURL.startsWith('http')) {
+    console.error('❌ HTTP配置错误: baseURL 格式不正确', baseURL)
+  }
+  
+  console.log('✅ HTTP配置验证通过, baseURL:', baseURL)
+  return baseURL
+}
+
 // 创建axios实例
 const http: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/api',
+  baseURL: validateConfig(),
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'

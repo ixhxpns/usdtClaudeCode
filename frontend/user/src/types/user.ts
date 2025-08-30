@@ -7,6 +7,7 @@ export type KycStatus = 'pending' | 'approved' | 'rejected' | 'reviewing' | 'res
 
 export interface User {
   id: number
+  username: string
   email: string
   phone?: string
   status: UserStatus
@@ -64,26 +65,28 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  access_token: string
-  refresh_token: string
-  expires_in: number
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
   user: User
 }
 
 export interface RegisterRequest {
+  username: string
   email: string
   password: string
   confirm_password: string
   phone?: string
-  verification_code: string
+  verificationCode: string
   agree_terms: boolean
 }
 
 export interface RegisterResponse {
   user: User
-  access_token: string
-  refresh_token: string
-  expires_in: number
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+  message: string
 }
 
 export interface PasswordChangeRequest {
@@ -166,8 +169,8 @@ export interface SecuritySettings {
 
 // Token刷新响应
 export interface TokenRefreshResponse {
-  access_token: string
-  expires_in: number
+  accessToken: string
+  expiresIn: number
 }
 
 // KYC提交请求

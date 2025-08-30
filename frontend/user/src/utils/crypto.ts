@@ -1,31 +1,96 @@
 import CryptoJS from 'crypto-js'
 import JSEncrypt from 'jsencrypt'
 
-// RSA公钥，实际使用时应该从服务器获取
-const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzQxf8p2q+WQE+E9z8qJv
-m4o6t9c3n4k5s7d2a1w9x8y7u6v5t4r3s2e1q0w9x8y7u6v5t4r3s2e1q0w9x8
-y7u6v5t4r3s2e1q0w9x8y7u6v5t4r3s2e1q0w9x8y7u6v5t4r3s2e1q0w9x8y7
-u6v5t4r3s2e1q0w9x8y7u6v5t4r3s2e1q0w9x8y7u6v5t4r3s2e1q0w9x8y7u6
-v5t4r3s2e1q0w9x8y7u6v5t4r3s2e1q0w9x8y7u6v5t4r3s2e1q0w9x8y7u6v5
-t4r3s2e1q0w9x8y7u6v5t4r3s2e1q0w9x8y7u6v5t4r3s2e1QIDAQAB
------END PUBLIC KEY-----`
+// 缓存RSA公钥和加密实例
+let cachedPublicKey: string | null = null
+let rsaEncrypt: JSEncrypt | null = null
+let publicKeyPromise: Promise<string> | null = null
 
-// 创建RSA加密实例
-const rsaEncrypt = new JSEncrypt()
-rsaEncrypt.setPublicKey(PUBLIC_KEY)
+/**
+ * 从服务器获取RSA公钥
+ */
+async function fetchPublicKey(): Promise<string> {
+  try {
+    const response = await fetch('/api/auth/public-key')
+    const data = await response.json()
+    
+    if (!data.success) {
+      throw new Error(data.message || '获取公钥失败')
+    }
+    
+    const publicKey = data.data.publicKey
+    // 格式化为PEM格式
+    const pemKey = `-----BEGIN PUBLIC KEY-----\n${publicKey}\n-----END PUBLIC KEY-----`
+    
+    console.log('成功获取RSA公钥')
+    return pemKey
+  } catch (error) {
+    console.error('获取RSA公钥失败:', error)
+    throw new Error('无法获取加密公钥，请检查网络连接')
+  }
+}
+
+/**
+ * 获取或缓存RSA公钥
+ */
+async function getPublicKey(): Promise<string> {
+  if (cachedPublicKey) {
+    return cachedPublicKey
+  }
+  
+  // 避免重复请求
+  if (!publicKeyPromise) {
+    publicKeyPromise = fetchPublicKey()
+  }
+  
+  try {
+    cachedPublicKey = await publicKeyPromise
+    return cachedPublicKey
+  } catch (error) {
+    // 重置Promise以便重试
+    publicKeyPromise = null
+    throw error
+  }
+}
+
+/**
+ * 初始化RSA加密实例
+ */
+async function initRSAEncrypt(): Promise<JSEncrypt> {
+  if (rsaEncrypt) {
+    return rsaEncrypt
+  }
+  
+  const publicKey = await getPublicKey()
+  rsaEncrypt = new JSEncrypt()
+  rsaEncrypt.setPublicKey(publicKey)
+  
+  return rsaEncrypt
+}
 
 /**
  * RSA加密
  * @param data 要加密的数据
  * @returns 加密后的字符串
  */
-export function rsaEncryptData(data: string): string {
-  const encrypted = rsaEncrypt.encrypt(data)
-  if (!encrypted) {
-    throw new Error('RSA加密失败')
+export async function rsaEncryptData(data: string): Promise<string> {
+  try {
+    const encryptInstance = await initRSAEncrypt()
+    const encrypted = encryptInstance.encrypt(data)
+    
+    if (!encrypted) {
+      // 清除缓存，下次重新获取公钥
+      cachedPublicKey = null
+      rsaEncrypt = null
+      publicKeyPromise = null
+      throw new Error('RSA加密失败，请重试')
+    }
+    
+    return encrypted
+  } catch (error) {
+    console.error('RSA加密错误:', error)
+    throw error
   }
-  return encrypted
 }
 
 /**
@@ -33,13 +98,35 @@ export function rsaEncryptData(data: string): string {
  * @param data 敏感数据
  * @returns 加密后的数据
  */
-export function encryptSensitiveData(data: string): string {
+export async function encryptSensitiveData(data: string): Promise<string> {
   try {
-    return rsaEncryptData(data)
+    return await rsaEncryptData(data)
   } catch (error) {
     console.error('敏感数据加密失败:', error)
     throw error
   }
+}
+
+/**
+ * 预加载RSA公钥（可选，用于提升首次加密性能）
+ */
+export async function preloadPublicKey(): Promise<void> {
+  try {
+    await getPublicKey()
+    console.log('RSA公钥预加载完成')
+  } catch (error) {
+    console.warn('RSA公钥预加载失败:', error)
+  }
+}
+
+/**
+ * 清除公钥缓存（用于密钥轮换等场景）
+ */
+export function clearPublicKeyCache(): void {
+  cachedPublicKey = null
+  rsaEncrypt = null
+  publicKeyPromise = null
+  console.log('RSA公钥缓存已清除')
 }
 
 /**
