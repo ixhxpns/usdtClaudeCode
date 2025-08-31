@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata \
     bash \
     mysql-client \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # 创建应用用户
