@@ -1,0 +1,74 @@
+server:
+  port: 8090
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: usdt-trading-platform
+  
+  # H2数据库配置
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:usdttrading;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    
+    # 使用HikariCP而不是Druid
+    hikari:
+      pool-name: USDTTradingPool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      validation-timeout: 5000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+      
+  # 禁用Druid自动配置
+  autoconfigure:
+    exclude:
+      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+
+  # H2控制台
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+# RSA密钥配置
+business:
+  security:
+    rsa:
+      public-key: ${BUSINESS_SECURITY_RSA_PUBLIC_KEY}
+      private-key: ${BUSINESS_SECURITY_RSA_PRIVATE_KEY}
+
+# 日志配置
+logging:
+  level:
+    com.usdttrading: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.h2: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

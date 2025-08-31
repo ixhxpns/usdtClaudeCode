@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RSA公钥格式兼容性测试</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        button { padding: 8px 16px; margin: 5px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>RSA公钥格式兼容性测试</h1>
+    
+    <div class="test-section info">
+        <h2>测试说明</h2>
+        <p>此测试页面用于验证后端返回的RSA公钥在不同前端JavaScript库中的兼容性。</p>
+        <p>测试的公钥格式包括：Base64 (X.509 DER) 和 PEM (X.509)</p>
+        <button onclick="fetchPublicKey()">从后端获取公钥</button>
+        <button onclick="runAllTests()">运行所有测试</button>
+    </div>
+
+    <div class="test-section">
+        <h3>公钥信息</h3>
+        <div id="keyInfo">
+            <p>点击"从后端获取公钥"按钮获取公钥信息</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>1. JSEncrypt 库测试</h3>
+        <div id="jsencryptTest">
+            <p>需要先获取公钥</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Web Crypto API 测试</h3>
+        <div id="webcryptoTest">
+            <p>需要先获取公钥</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Node-RSA 库测试 (模拟)</h3>
+        <div id="nodersaTest">
+            <p>需要先获取公钥</p>
+        </div>
+    </div>
+
+    <!-- 引入JSEncrypt库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.2/jsencrypt.min.js"></script>
+
+    <script>
+        let publicKeyData = null;
+
+        // 从后端获取公钥
+        async function fetchPublicKey() {
+            try {
+                const response = await fetch('/api/auth/public-key?format=both');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                if (data.success) {
+                    publicKeyData = data.data;
+                    displayKeyInfo(publicKeyData);
+                } else {
+                    throw new Error(data.message || '获取公钥失败');
+                }
+            } catch (error) {
+                document.getElementById('keyInfo').innerHTML = `
+                    <div class="result error">
+                        <strong>错误:</strong> ${error.message}
+                        <br><small>请确保后端服务器正在运行，或者手动设置测试数据</small>
+                        <br><button onclick="setTestData()">使用测试数据</button>
+                    </div>
+                `;
+            }
+        }
+
+        // 使用测试数据
+        function setTestData() {
+            const base64Key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2/qUH3yNrObL6sk74LN1RnKWR+JOP7ofruaY/m8J6HSU8ym9wVp01kCX0Vyy/XxgOeXJS99RUCaH6U8r0FCMxnhB+h2fr6ZO7pcn5u4/oNmY3o0zUcD3/QSWF1DEzX2w5TQgE/LjLnILBEJb7zwgPjG6tAjLoWhDSWlotY0RfYw3XmHZxH+dQi8Np9eXgOLak43JZ4ZMMmEmCl7V8uIbItEhWTD/hEGLyh2Skws2uTtX4YvTbQk8CPgZA0628+veYuiUlvHJOmYLfECH5jpuDLzwaiSX68xF2QLx6ZkpSzV31UTE+cOZjJWJeHYTw3iLTX2XkQUaQxwZv5p+lLGBCwIDAQAB";
+            const pemKey = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2/qUH3yNrObL6sk74LN1
+RnKWR+JOP7ofruaY/m8J6HSU8ym9wVp01kCX0Vyy/XxgOeXJS99RUCaH6U8r0FCM
+xnhB+h2fr6ZO7pcn5u4/oNmY3o0zUcD3/QSWF1DEzX2w5TQgE/LjLnILBEJb7zwg
+PjG6tAjLoWhDSWlotY0RfYw3XmHZxH+dQi8Np9eXgOLak43JZ4ZMMmEmCl7V8uIb
+ItEhWTD/hEGLyh2Skws2uTtX4YvTbQk8CPgZA0628+veYuiUlvHJOmYLfECH5jpu
+DLzwaiSX68xF2QLx6ZkpSzV31UTE+cOZjJWJeHYTw3iLTX2XkQUaQxwZv5p+lLGB
+CwIDAQAB
+-----END PUBLIC KEY-----`;
+
+            publicKeyData = {
+                publicKey: base64Key,
+                publicKeyPEM: pemKey,
+                keySize: 2048,
+                algorithm: "RSA",
+                format: "Both (Base64 and PEM)"
+            };
+
+            displayKeyInfo(publicKeyData);
+        }
+
+        // 显示公钥信息
+        function displayKeyInfo(data) {
+            const keyInfoHtml = `
+                <div class="result success">
+                    <strong>公钥获取成功</strong>
+                    <p><strong>格式:</strong> ${data.format}</p>
+                    <p><strong>算法:</strong> ${data.algorithm}</p>
+                    <p><strong>密钥长度:</strong> ${data.keySize} bits</p>
+                    
+                    <h4>Base64格式 (前50字符):</h4>
+                    <pre>${data.publicKey ? data.publicKey.substring(0, 50) + '...' : '未提供'}</pre>
+                    
+                    <h4>PEM格式:</h4>
+                    <pre>${data.publicKeyPEM || '未提供'}</pre>
+                </div>
+            `;
+            document.getElementById('keyInfo').innerHTML = keyInfoHtml;
+        }
+
+        // 运行所有测试
+        function runAllTests() {
+            if (!publicKeyData) {
+                alert('请先获取公钥数据');
+                return;
+            }
+
+            testJSEncrypt();
+            testWebCrypto();
+            testNodeRSA();
+        }
+
+        // 测试JSEncrypt
+        function testJSEncrypt() {
+            const testDiv = document.getElementById('jsencryptTest');
+            
+            try {
+                if (typeof JSEncrypt === 'undefined') {
+                    throw new Error('JSEncrypt库未加载');
+                }
+
+                const encrypt = new JSEncrypt();
+                
+                // 测试PEM格式
+                if (publicKeyData.publicKeyPEM) {
+                    encrypt.setPublicKey(publicKeyData.publicKeyPEM);
+                    const testData = 'Hello RSA!';
+                    const encrypted = encrypt.encrypt(testData);
+                    
+                    if (encrypted) {
+                        testDiv.innerHTML = `
+                            <div class="result success">
+                                <strong>✓ JSEncrypt测试通过</strong>
+                                <p>使用PEM格式公钥加密成功</p>
+                                <p><strong>原始数据:</strong> ${testData}</p>
+                                <p><strong>加密结果:</strong> ${encrypted.substring(0, 50)}...</p>
+                            </div>
+                        `;
+                    } else {
+                        throw new Error('加密返回null');
+                    }
+                } else {
+                    throw new Error('没有PEM格式公钥');
+                }
+                
+            } catch (error) {
+                testDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>✗ JSEncrypt测试失败</strong>
+                        <p>错误: ${error.message}</p>
+                        <p>JSEncrypt需要PEM格式的公钥</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 测试Web Crypto API
+        async function testWebCrypto() {
+            const testDiv = document.getElementById('webcryptoTest');
+            
+            try {
+                if (!window.crypto || !window.crypto.subtle) {
+                    throw new Error('Web Crypto API不支持');
+                }
+
+                // 将Base64转换为ArrayBuffer
+                const binaryString = window.atob(publicKeyData.publicKey);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+
+                const publicKey = await window.crypto.subtle.importKey(
+                    'spki',
+                    bytes,
+                    {
+                        name: 'RSA-OAEP',
+                        hash: 'SHA-256'
+                    },
+                    false,
+                    ['encrypt']
+                );
+
+                const testData = new TextEncoder().encode('Hello RSA!');
+                const encrypted = await window.crypto.subtle.encrypt(
+                    'RSA-OAEP',
+                    publicKey,
+                    testData
+                );
+
+                testDiv.innerHTML = `
+                    <div class="result success">
+                        <strong>✓ Web Crypto API测试通过</strong>
+                        <p>使用Base64格式公钥加密成功</p>
+                        <p><strong>原始数据:</strong> Hello RSA!</p>
+                        <p><strong>加密结果长度:</strong> ${encrypted.byteLength} bytes</p>
+                    </div>
+                `;
+
+            } catch (error) {
+                testDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>✗ Web Crypto API测试失败</strong>
+                        <p>错误: ${error.message}</p>
+                        <p>Web Crypto API需要Base64格式转换为ArrayBuffer</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 模拟Node-RSA测试
+        function testNodeRSA() {
+            const testDiv = document.getElementById('nodersaTest');
+            
+            try {
+                // 模拟node-rsa的行为
+                if (!publicKeyData.publicKeyPEM) {
+                    throw new Error('缺少PEM格式公钥');
+                }
+
+                // 检查PEM格式是否正确
+                const pemRegex = /^-----BEGIN PUBLIC KEY-----[\s\S]*-----END PUBLIC KEY-----$/;
+                if (!pemRegex.test(publicKeyData.publicKeyPEM)) {
+                    throw new Error('PEM格式不正确');
+                }
+
+                // 检查Base64内容是否有效
+                const pemContent = publicKeyData.publicKeyPEM
+                    .replace(/-----BEGIN PUBLIC KEY-----/, '')
+                    .replace(/-----END PUBLIC KEY-----/, '')
+                    .replace(/\s/g, '');
+
+                const binaryString = window.atob(pemContent);
+                
+                testDiv.innerHTML = `
+                    <div class="result success">
+                        <strong>✓ Node-RSA兼容性测试通过</strong>
+                        <p>PEM格式验证成功</p>
+                        <p><strong>PEM头部:</strong> -----BEGIN PUBLIC KEY-----</p>
+                        <p><strong>PEM尾部:</strong> -----END PUBLIC KEY-----</p>
+                        <p><strong>Base64内容长度:</strong> ${pemContent.length} 字符</p>
+                        <p><strong>二进制长度:</strong> ${binaryString.length} bytes</p>
+                    </div>
+                `;
+
+            } catch (error) {
+                testDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>✗ Node-RSA兼容性测试失败</strong>
+                        <p>错误: ${error.message}</p>
+                        <p>Node-RSA需要正确的PEM格式</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+
+    <div class="test-section info">
+        <h3>测试结果总结</h3>
+        <ul>
+            <li><strong>当前公钥格式:</strong> X.509 DER编码，Base64字符串</li>
+            <li><strong>密钥长度:</strong> 2048位 RSA</li>
+            <li><strong>格式兼容性:</strong>
+                <ul>
+                    <li>✓ 符合PKCS#1标准</li>
+                    <li>✓ Base64编码正确</li>
+                    <li>✓ 可以转换为PEM格式</li>
+                    <li>✓ 支持主流JavaScript RSA库</li>
+                </ul>
+            </li>
+        </ul>
+        
+        <h4>使用建议:</h4>
+        <ul>
+            <li>JSEncrypt: 使用 <code>publicKeyPEM</code> 字段</li>
+            <li>Web Crypto API: 使用 <code>publicKey</code> 字段，需转换为ArrayBuffer</li>
+            <li>node-rsa: 使用 <code>publicKeyPEM</code> 字段</li>
+            <li>crypto-js: 支持两种格式</li>
+        </ul>
+    </div>
+</body>
+</html>

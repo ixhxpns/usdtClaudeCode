@@ -12,8 +12,11 @@ import org.springframework.stereotype.Service;
 import com.usdttrading.entity.SecurityEvent;
 import com.usdttrading.repository.SecurityEventMapper;
 import com.usdttrading.utils.RequestUtils;
+
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 審計日誌服務類
@@ -165,7 +168,7 @@ public class AuditLogService {
             securityEvent.setErrorMessage(errorMessage);
             
             try {
-                securityEvent.setRequestId(RequestTraceInterceptor.getCurrentTraceId());
+                securityEvent.setRequestId(getCurrentTraceId());
             } catch (Exception e) {
                 // 忽略請求上下文獲取失敗的情況
             }
@@ -239,6 +242,36 @@ public class AuditLogService {
             
         } catch (Exception e) {
             log.error("記錄郵件事件失敗", e);
+        }
+    }
+
+    /**
+     * 获取客户端IP地址
+     */
+    private String getClientIP(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !"unknown".equalsIgnoreCase(xForwardedFor)) {
+            // 多个代理的情况，第一个IP为客户端真实IP
+            return xForwardedFor.split(",")[0].trim();
+        }
+
+        String xRealIP = request.getHeader("X-Real-IP");
+        if (xRealIP != null && !xRealIP.isEmpty() && !"unknown".equalsIgnoreCase(xRealIP)) {
+            return xRealIP;
+        }
+
+        return request.getRemoteAddr();
+    }
+
+    /**
+     * 获取当前请求的追踪ID
+     */
+    private String getCurrentTraceId() {
+        try {
+            return RequestTraceInterceptor.getCurrentTraceId();
+        } catch (Exception e) {
+            // 如果RequestTraceInterceptor不可用，生成一个简单的ID
+            return "TRACE-" + System.currentTimeMillis();
         }
     }
 }

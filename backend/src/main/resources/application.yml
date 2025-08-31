@@ -22,24 +22,41 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/usdt_trading_platform?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:usdt_trading_platform}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectTimeout=30000&socketTimeout=30000
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:password}
+    password: ${DB_PASSWORD:UsdtTrading123!}
     
     # Druid连接池配置
     druid:
-      initial-size: 10
-      min-idle: 10
-      max-active: 100
+      initial-size: 5
+      min-idle: 5
+      max-active: 50
       max-wait: 60000
       time-between-eviction-runs-millis: 60000
       min-evictable-idle-time-millis: 300000
       validation-query: SELECT 1
       test-while-idle: true
-      test-on-borrow: false
+      test-on-borrow: true
       test-on-return: false
       pool-prepared-statements: true
       max-pool-prepared-statement-per-connection-size: 20
+      # 连接重试配置
+      connection-error-retry-attempts: 5
+      break-after-acquire-failure: false
+      # 失败重试间隔
+      time-between-connect-error-millis: 5000
+      # 连接泄漏检测
+      remove-abandoned: true
+      remove-abandoned-timeout: 300
+      log-abandoned: true
+      # 连接保活
+      keep-alive: true
+      keep-alive-between-time-millis: 60000
+      # 失败快速处理
+      fail-fast: false
+      not-full-timeout-retry-count: 2
+      # 验证查询超时
+      validation-query-timeout: 5
       # 监控配置
       web-stat-filter:
         enabled: true
@@ -53,6 +70,22 @@ spring:
         reset-enable: false
         allow: ""
         deny: ""
+      # SQL监控和防火墙
+      filter:
+        stat:
+          enabled: true
+          log-slow-sql: true
+          slow-sql-millis: 3000
+          merge-sql: true
+        wall:
+          enabled: true
+          config:
+            multi-statement-allow: false
+            none-base-statement-allow: false
+        slf4j:
+          enabled: true
+          connection-log-enabled: false
+          statement-log-enabled: false
   
   # Redis配置
   data:
@@ -185,8 +218,8 @@ business:
   security:
     # RSA密钥对
     rsa:
-      public-key: ${RSA_PUBLIC_KEY:}
-      private-key: ${RSA_PRIVATE_KEY:}
+      public-key: ${RSA_PUBLIC_KEY:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxmTySloYZJcTd0QqsIxyhbcgeliik+16oAW5SRV+WpZWE7SuXtPiynZXPnPcrqSJ3HKcKvdqop9+u6YKpUhFEIOoktqybUhsjWhwfOidSXeoOEkk9Y2MIQYb5ktZFQ25uYP5pOdq5itgJiDRktCkgPD/ujjkSMf+ktJxDLiSGBD3I8aYBULBp4LqWfoeLDw9yhynJJrlmic3ccCO6PFTrovCCMnmw0oAo/WtvO5z06g6S5XcCMj/Z3un2z4I/CJYK/hN7OrscfwYZ7e1f4+4LJhf0JHKCiiYH0sQBSoG9xoBf0qvixWxLmq6rcEZcig3eHYxO1yNhJR98tFYNtQckwIDAQAB}
+      private-key: ${RSA_PRIVATE_KEY:MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDGZPJKWhhklxN3RCqwjHKFtyB6WKKT7XqgBblJFX5allYTtK5e0+LKdlc+c9yupInccpwq92qin367pgqlSEUQg6iS2rJtSGyNaHB86J1Jd6g4SST1jYwhBhvmS1kVDbm5g/mk52rmK2AmINGS0KSA8P+6OORIx/6S0nEMuJIYEPcjxpgFQsGngupZ+h4sPD3KHKckmuWaJzdxwI7o8VOui8IIyebDSgCj9a287nPTqDpLldwIyP9ne6fbPgj8Ilgr+E3s6uxx/Bhnt7V/j7gsmF/QkcoKKJgfSxAFKgb3GgF/Sq+LFbEuarqtwRlyKDd4djE7XI2ElH3y0Vg21ByTAgMBAAECggEAIRl6avk5FJ83+i//R1FHUhPJcWAUT8XRLZ2G2jCh0g8+8S614NBNCCZSS/McoG6HKaZdc7Wvrs4ZYMlFAWpbS3QLzeR63Ey2/6irC8vrYfR6tllNt0IUXPYd9YAgrqiJke/42JBbf2dBNVtIW8w/hduvbqxLOfFUAb7maY7poOX4ghIBI92VNtgBMWI6XU1U90ShyMd7xGm8XBEW581K4mZkC6Ziybp6PKERxlnEv2Q5QTvHy6TBrDDtokYRr3AW1iZkzI4AoUvk58rV3qY71OPt5+TXNIeIqhM7MmqjjP1BAGtRDQGMhHXdeLqtptuLnD0xKc6h/fe29rh2j/z6AQKBgQDjAy7RIzb7qnSvB1+emHW/6z2a2UsE2dd4wMuAGNQFF9+ISS+6l8lsZnOzAFGMJmAZP7XZcxsYSV84tT7HWSJO9e+Jm1jdzhYRQCh5d7hrQ9BZyfxW0iT8+Fd/r1njHi1RFakoTZJszzc8m7daNLtFP+zOxLkp4A3WZ93SouYOEwKBgQDfukPh56Xyjqg+MYLDZJTZcvIg6V5JpRH2d1Or2Q2+msN85YWDB758AU4iFaP/NBJ/ahDHdNdQOIHRRLjgk71xQPZ7ezou34sKHKevkD5yoATJG9NUMAlKernwAoNAd425sSCgqNMqAiXqFcfadPsBrblxSLTQOBU4FfIKRfmHgQKBgQCUAho/Hu+VTACBsZQFSi/TbmOfFzdTNVjIESNdJFLv8y25pMXqqVYZR/79YSLJ9qdHLwO4f9TVk9jylzEUNigpRS3lERTyoJBAtQzujUD/JpqsQAY28RJOoPgjdsdrTdyL9kxwy4rBSKUh7gCwXpsOvmv+L8Lt63f6J4Q39h96YwKBgQCD71xIxErgl7AvvRLYF2CQO3D+Z6Dq3SWSqxv0o7OvS6Us6k2pz89NYZeqEgj8XsDp0qrCdOzkqe4kctpz1axKNX0lpK3TJpDgDbX1mqK5BhTMZFRjuVBBU86C83hjdB1n/ES5edXNWCbzvJR3B7VecAyD+dRnVittP8PUux9EAQKBgQCOAjiWktOAY2F0e/qOLlyCuxqO33755bKw58jlwLa84sRA8eDpua5yeB9ha0GEXlj2ttAYif5x8yFsfBOsf4ZgUgoog7Peh6/53K/AddT1CPjvd7W72udZ2Lz4W3lhkWccFsMk5oKf1yMfe6fZRuJjrx9KwvnG5EMSBVD2+NhmcA==}
     # 登录失败最大次数
     max-login-attempts: 5
     # 账户锁定时间(分钟)

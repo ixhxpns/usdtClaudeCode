@@ -7,6 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    AdminDiagnostic: typeof import('./src/components/AdminDiagnostic.vue')['default']
     AdminLayout: typeof import('./src/components/layout/AdminLayout.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']

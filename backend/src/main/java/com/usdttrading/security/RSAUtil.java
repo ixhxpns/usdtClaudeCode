@@ -138,6 +138,61 @@ public class RSAUtil {
         }
         return publicKeyStr;
     }
+    
+    /**
+     * 获取PEM格式公钥字符串
+     */
+    public String getPublicKeyPEMString() {
+        if (publicKeyStr == null || publicKeyStr.isEmpty()) {
+            throw new IllegalStateException("RSA公钥未配置");
+        }
+        return convertToPEMFormat(publicKeyStr);
+    }
+    
+    /**
+     * 将Base64公钥转换为PEM格式
+     */
+    private String convertToPEMFormat(String base64Key) {
+        StringBuilder pem = new StringBuilder();
+        pem.append("-----BEGIN PUBLIC KEY-----\n");
+        
+        // 每64个字符换行
+        for (int i = 0; i < base64Key.length(); i += 64) {
+            int end = Math.min(i + 64, base64Key.length());
+            pem.append(base64Key.substring(i, end)).append("\n");
+        }
+        
+        pem.append("-----END PUBLIC KEY-----");
+        return pem.toString();
+    }
+    
+    /**
+     * 获取公钥详细信息
+     */
+    public java.util.Map<String, Object> getPublicKeyDetails() {
+        java.util.Map<String, Object> details = new java.util.HashMap<>();
+        
+        try {
+            PublicKey publicKey = getPublicKey();
+            
+            details.put("algorithm", publicKey.getAlgorithm());
+            details.put("format", publicKey.getFormat());
+            
+            if (publicKey instanceof java.security.interfaces.RSAPublicKey) {
+                java.security.interfaces.RSAPublicKey rsaKey = (java.security.interfaces.RSAPublicKey) publicKey;
+                details.put("keySize", rsaKey.getModulus().bitLength());
+                details.put("publicExponent", rsaKey.getPublicExponent().toString());
+            }
+            
+            details.put("keyType", "RSA");
+            details.put("encoding", "X.509");
+            
+        } catch (Exception e) {
+            throw new RuntimeException("获取公钥详细信息失败", e);
+        }
+        
+        return details;
+    }
 
     /**
      * 密钥对转换为Base64字符串

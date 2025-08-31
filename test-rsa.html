@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSA加密测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsencrypt@3.3.2/bin/jsencrypt.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        textarea, input { 
+            width: 100%; 
+            margin: 10px 0; 
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 USDT交易平台 - RSA加密测试</h1>
+    
+    <div class="section">
+        <h2>1. 后端服务状态检查</h2>
+        <button onclick="checkBackendStatus()">检查后端状态</button>
+        <div id="backend-status" class="code"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. 获取RSA公钥</h2>
+        <button onclick="fetchPublicKey()">获取公钥</button>
+        <div id="public-key-status" class="code"></div>
+        <textarea id="public-key-display" rows="6" readonly placeholder="RSA公钥将显示在这里..."></textarea>
+    </div>
+    
+    <div class="section">
+        <h2>3. RSA加密测试</h2>
+        <input type="text" id="test-data" placeholder="输入要加密的数据" value="test123456">
+        <button onclick="testRSAEncryption()">加密测试</button>
+        <div id="encryption-result" class="code"></div>
+        <textarea id="encrypted-data" rows="4" readonly placeholder="加密结果将显示在这里..."></textarea>
+    </div>
+    
+    <div class="section">
+        <h2>4. 管理员登录测试</h2>
+        <input type="text" id="username" placeholder="管理员用户名" value="admin">
+        <input type="password" id="password" placeholder="管理员密码" value="admin123">
+        <button onclick="testAdminLogin()">登录测试</button>
+        <div id="login-result" class="code"></div>
+    </div>
+
+    <script>
+        let cachedPublicKey = null;
+        let rsaEncrypt = null;
+        
+        // 检查后端服务状态
+        async function checkBackendStatus() {
+            const statusDiv = document.getElementById('backend-status');
+            statusDiv.innerHTML = '🔍 检查后端服务状态...';
+            
+            try {
+                const endpoints = [
+                    '/api/admin/auth/public-key',
+                    '/api/auth/public-key',
+                    '/api/actuator/health'
+                ];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(`http://localhost:8080${endpoint}`);
+                        const status = response.ok ? '✅' : '❌';
+                        statusDiv.innerHTML += `<br>${status} ${endpoint}: ${response.status} ${response.statusText}`;
+                    } catch (error) {
+                        statusDiv.innerHTML += `<br>❌ ${endpoint}: ${error.message}`;
+                    }
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `❌ 检查失败: ${error.message}`;
+            }
+        }
+        
+        // 获取RSA公钥
+        async function fetchPublicKey() {
+            const statusDiv = document.getElementById('public-key-status');
+            const keyDisplay = document.getElementById('public-key-display');
+            
+            statusDiv.innerHTML = '🔍 正在获取RSA公钥...';
+            statusDiv.className = 'code';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/admin/auth/public-key', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Client-Type': 'admin'
+                    }
+                });
+                
+                statusDiv.innerHTML += `<br>HTTP状态: ${response.status} ${response.statusText}`;
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                statusDiv.innerHTML += `<br>响应数据: ${JSON.stringify(data, null, 2)}`;
+                
+                if (data.success && data.data && data.data.publicKey) {
+                    cachedPublicKey = data.data.publicKey;
+                    const pemKey = `-----BEGIN PUBLIC KEY-----\\n${cachedPublicKey}\\n-----END PUBLIC KEY-----`;
+                    
+                    keyDisplay.value = pemKey;
+                    statusDiv.innerHTML += `<br>✅ RSA公钥获取成功`;
+                    statusDiv.className = 'code success';
+                    
+                    // 初始化JSEncrypt
+                    rsaEncrypt = new JSEncrypt();
+                    rsaEncrypt.setPublicKey(pemKey);
+                    
+                } else {
+                    throw new Error('响应中缺少公钥数据');
+                }
+                
+            } catch (error) {
+                statusDiv.innerHTML += `<br>❌ 获取公钥失败: ${error.message}`;
+                statusDiv.className = 'code error';
+            }
+        }
+        
+        // RSA加密测试
+        function testRSAEncryption() {
+            const testData = document.getElementById('test-data').value;
+            const resultDiv = document.getElementById('encryption-result');
+            const encryptedDisplay = document.getElementById('encrypted-data');
+            
+            resultDiv.innerHTML = '🔐 开始RSA加密测试...';
+            resultDiv.className = 'code';
+            
+            if (!rsaEncrypt) {
+                resultDiv.innerHTML = '❌ 请先获取RSA公钥';
+                resultDiv.className = 'code error';
+                return;
+            }
+            
+            if (!testData) {
+                resultDiv.innerHTML = '❌ 请输入要加密的数据';
+                resultDiv.className = 'code error';
+                return;
+            }
+            
+            try {
+                const encrypted = rsaEncrypt.encrypt(testData);
+                
+                if (!encrypted) {
+                    throw new Error('加密失败，返回空值');
+                }
+                
+                encryptedDisplay.value = encrypted;
+                resultDiv.innerHTML = `✅ 加密成功<br>原文: ${testData}<br>密文长度: ${encrypted.length} 字符`;
+                resultDiv.className = 'code success';
+                
+            } catch (error) {
+                resultDiv.innerHTML = `❌ 加密失败: ${error.message}`;
+                resultDiv.className = 'code error';
+            }
+        }
+        
+        // 管理员登录测试
+        async function testAdminLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('login-result');
+            
+            resultDiv.innerHTML = '🔑 开始管理员登录测试...';
+            resultDiv.className = 'code';
+            
+            if (!username || !password) {
+                resultDiv.innerHTML = '❌ 请输入用户名和密码';
+                resultDiv.className = 'code error';
+                return;
+            }
+            
+            try {
+                // 确保有RSA公钥
+                if (!rsaEncrypt) {
+                    resultDiv.innerHTML += '<br>🔍 正在获取RSA公钥...';
+                    await fetchPublicKey();
+                    
+                    if (!rsaEncrypt) {
+                        throw new Error('无法获取RSA公钥');
+                    }
+                }
+                
+                // 加密密码
+                resultDiv.innerHTML += '<br>🔐 正在加密密码...';
+                const encryptedPassword = rsaEncrypt.encrypt(password);
+                
+                if (!encryptedPassword) {
+                    throw new Error('密码加密失败');
+                }
+                
+                resultDiv.innerHTML += '<br>✅ 密码加密成功';
+                
+                // 发送登录请求
+                resultDiv.innerHTML += '<br>📤 发送登录请求...';
+                const response = await fetch('http://localhost:8080/api/admin/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Client-Type': 'admin'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: encryptedPassword
+                    })
+                });
+                
+                resultDiv.innerHTML += `<br>HTTP状态: ${response.status} ${response.statusText}`;
+                
+                const data = await response.json();
+                resultDiv.innerHTML += `<br>响应数据: ${JSON.stringify(data, null, 2)}`;
+                
+                if (data.success) {
+                    resultDiv.innerHTML += '<br>✅ 管理员登录成功!';
+                    resultDiv.className = 'code success';
+                } else {
+                    resultDiv.innerHTML += `<br>❌ 登录失败: ${data.message}`;
+                    resultDiv.className = 'code error';
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML += `<br>❌ 登录测试失败: ${error.message}`;
+                resultDiv.className = 'code error';
+            }
+        }
+        
+        // 页面加载时自动检查状态
+        window.addEventListener('load', function() {
+            setTimeout(checkBackendStatus, 1000);
+        });
+    </script>
+</body>
+</html>

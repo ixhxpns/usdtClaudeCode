@@ -175,7 +175,7 @@ public class UserService {
             
         } catch (Exception e) {
             log.error("RSA解密登錄失敗，邮箱: {}, 错误: {}", email, e.getMessage());
-            throw new BusinessException("DECRYPT_FAILED", "密碼解密失敗，請重試");
+            throw new BusinessException(40003, "密碼解密失敗，請重試");
         }
     }
 

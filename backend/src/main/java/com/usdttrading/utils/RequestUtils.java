@@ -4,6 +4,8 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.stereotype.Service;
+
 /**
  * 請求工具類
  * 提供HTTP請求相關的工具方法
@@ -12,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
  * @version 1.0.0
  * @since 2025-08-19
  */
+@Service
 public class RequestUtils {
 
     /**

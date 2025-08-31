@@ -14,6 +14,7 @@ import {
   notifyAuthStateChange
 } from '@/utils/auth'
 import { encryptSensitiveData } from '@/utils/crypto'
+import { fallbackLogin, shouldUseFallback, getFriendlyErrorMessage, reportError } from '@/utils/fallback-auth'
 import type { 
   Admin, 
   AdminLoginRequest, 
@@ -65,14 +66,51 @@ export const useAuthStore = defineStore('adminAuth', () => {
     try {
       isLoading.value = true
       
-      // 加密密码
-      const encryptedPassword = await encryptSensitiveData(credentials.password)
-      const encryptedCredentials = {
-        ...credentials,
-        password: encryptedPassword
-      }
+      // 先检测API健康状态
+      console.log('🔍 检测API健康状态...');
+      const healthCheck = await import('@/utils/crypto').then(m => m.checkAPIHealth());
+      console.log('API健康检查结果:', healthCheck);
+      
+      let response: AdminLoginResponse;
+      
+      try {
+        // 尝试正常的RSA加密登录流程
+        console.log('🔐 尝试RSA加密登录...');
+        const encryptedPassword = await encryptSensitiveData(credentials.password);
+        console.log('✅ RSA密码加密成功');
+        
+        const encryptedCredentials = {
+          ...credentials,
+          password: encryptedPassword
+        }
 
-      const response = await AdminHttpClient.post<AdminLoginResponse>('/admin/auth/login', encryptedCredentials)
+        response = await AdminHttpClient.post<AdminLoginResponse>('/admin/auth/login', encryptedCredentials);
+        
+      } catch (encryptError: any) {
+        console.warn('⚠️ RSA登录失败:', encryptError.message);
+        
+        // 检查是否应该使用降级方案
+        if (shouldUseFallback(encryptError)) {
+          console.log('🔄 尝试降级登录方案...');
+          
+          // 报告错误用于诊断
+          reportError(encryptError, {
+            username: credentials.username,
+            step: 'rsa_encryption'
+          });
+          
+          try {
+            response = await fallbackLogin(credentials);
+            console.log('✅ 降级登录成功');
+          } catch (fallbackError: any) {
+            console.error('❌ 降级登录也失败:', fallbackError.message);
+            throw fallbackError;
+          }
+        } else {
+          // 不适合降级的错误，直接抛出
+          throw encryptError;
+        }
+      }
       
       // 保存认证信息
       setToken(response.access_token)
@@ -91,9 +129,29 @@ export const useAuthStore = defineStore('adminAuth', () => {
       return response
     } catch (error: any) {
       loginAttempts.value++
-      const message = error.message || '登录失败'
-      ElMessage.error(message)
-      throw error
+      
+      // 提供用户友好的错误信息
+      const message = getFriendlyErrorMessage(error);
+      
+      console.error('管理员登录失败:', {
+        error: error.message,
+        attempts: loginAttempts.value,
+        credentials: {
+          username: credentials.username,
+          hasPassword: !!credentials.password,
+          hasMfaCode: !!credentials.mfa_code
+        }
+      });
+      
+      // 发送错误报告用于诊断
+      reportError(error, {
+        username: credentials.username,
+        attempts: loginAttempts.value,
+        step: 'login_final'
+      });
+      
+      ElMessage.error(message);
+      throw new Error(message);
     } finally {
       isLoading.value = false
     }

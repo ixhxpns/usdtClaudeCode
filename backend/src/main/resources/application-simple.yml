@@ -1,0 +1,68 @@
+server:
+  port: 8090
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: usdt-trading-platform
+  
+  # 简化的数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/usdttrading?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&connectTimeout=60000&socketTimeout=60000&autoReconnect=true&useLocalSessionState=true&rewriteBatchedStatements=true
+    username: root
+    password: UsdtTrading123!
+    
+    # Druid连接池配置
+    druid:
+      initial-size: 1
+      min-idle: 1
+      max-active: 10
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      keep-alive-between-time-millis: 120000
+      validation-query: SELECT 1
+      validation-query-timeout: 3
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      pool-prepared-statements: false
+      
+  # 简化的Redis配置
+  redis:
+    host: redis
+    port: 6379
+    timeout: 6000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+
+# RSA密钥配置
+business:
+  security:
+    rsa:
+      public-key: ${BUSINESS_SECURITY_RSA_PUBLIC_KEY}
+      private-key: ${BUSINESS_SECURITY_RSA_PRIVATE_KEY}
+
+# 日志配置
+logging:
+  level:
+    com.usdttrading: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    com.mysql: WARN
+    com.alibaba.druid: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

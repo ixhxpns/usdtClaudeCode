@@ -1,0 +1,85 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: usdt-trading-platform
+  
+  # 数据库配置 - Docker环境
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mysql:3306/usdttrading?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: UsdtTrading123!
+    hikari:
+      pool-name: USDTTradingPool
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 60000
+      validation-timeout: 3000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+      
+  # Redis配置 - Docker环境  
+  redis:
+    host: redis
+    port: 6379
+    timeout: 6000ms
+    lettuce:
+      pool:
+        max-active: 10
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 2
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+# RSA密钥配置
+business:
+  security:
+    rsa:
+      public-key: ${BUSINESS_SECURITY_RSA_PUBLIC_KEY}
+      private-key: ${BUSINESS_SECURITY_RSA_PRIVATE_KEY}
+
+# 日志配置
+logging:
+  level:
+    com.usdttrading: DEBUG
+    org.springframework: INFO
+    org.hibernate: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /app/logs/application.log
+
+# 管理端点配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: true
+    db:
+      enabled: true

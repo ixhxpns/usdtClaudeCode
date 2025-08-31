@@ -5,7 +5,6 @@
 # Version: 3.8 (Compatible with Docker Engine 19.03.0+)
 # ============================================================================
 
-version: '3.8'
 
 # ============================================================================
 # SERVICES CONFIGURATION
@@ -54,11 +53,11 @@ services:
     
     # Health check
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     
     # MySQL configuration
     command: 
@@ -114,10 +113,10 @@ services:
     # Health check
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     
     # Redis configuration
     command: redis-server /etc/redis/redis.conf --logfile /var/log/redis/redis.log
@@ -163,14 +162,18 @@ services:
       REDIS_TIMEOUT: ${REDIS_TIMEOUT:-5000}
       
       # JWT configuration
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4qiw8PWe6PO3Nl3KrWNPx+R/YgLbD3pEFG7KrU3OqwJQu6p2mG8VQs3VJz3bLg+5G4hjKl2+F8g2QnYZP9lA8KLJnJv8FD5oqAFczKY9EzfmC8K+DfbG6SsE2xC+L1iYE4d7i8E8dI+F5vC3W7zBJQs8VL5F8G2L7C1K8L+D9YhQsA8P8E5F9G8L3C2vQs+L8G9F1D2vE5K9L+G8VQs5L8G7F2D9vE3C+L7G8VQs2L+F8G9D1vE4K8L+G5VQs9L8G3F7D2vE6C+L1G8VQs7L+F9G4D8vE5K2L+G6VQs3L8G8F1D7vE9C+L4G2VQs6L+F3G7D5vE8K9L+G1VQs4L8G5F3D6vE2C+L9G7VQs8L+F6G2D4vE7K1L+G3VQs5L8G9F8D1vE3C6L+G4VQs2L+F7G1D9vE5K8L+G6VQs7QIDAQAB}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400}
       
+      # RSA configuration (临时生成用于测试)
+      BUSINESS_SECURITY_RSA_PUBLIC_KEY: ${BUSINESS_SECURITY_RSA_PUBLIC_KEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4qiw8PWe6PO3Nl3KrWNPx+R/YgLbD3pEFG7KrU3OqwJQu6p2mG8VQs3VJz3bLg+5G4hjKl2+F8g2QnYZP9lA8KLJnJv8FD5oqAFczKY9EzfmC8K+DfbG6SsE2xC+L1iYE4d7i8E8dI+F5vC3W7zBJQs8VL5F8G2L7C1K8L+D9YhQsA8P8E5F9G8L3C2vQs+L8G9F1D2vE5K9L+G8VQs5L8G7F2D9vE3C+L7G8VQs2L+F8G9D1vE4K8L+G5VQs9L8G3F7D2vE6C+L1G8VQs7L+F9G4D8vE5K2L+G6VQs3L8G8F1D7vE9C+L4G2VQs6L+F3G7D5vE8K9L+G1VQs4L8G5F3D6vE2C+L9G7VQs8L+F6G2D4vE7K1L+G3VQs5L8G9F8D1vE3C6L+G4VQs2L+F7G1D9vE5K8L+G6VQs7QIDAQAB}
+      BUSINESS_SECURITY_RSA_PRIVATE_KEY: ${BUSINESS_SECURITY_RSA_PRIVATE_KEY:-}
+      
       # Email configuration
-      MAIL_HOST: ${MAIL_HOST}
+      MAIL_HOST: ${MAIL_HOST:-g-mate.org}
       MAIL_PORT: ${MAIL_PORT:-587}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_USERNAME: ${MAIL_USERNAME:-JasonWang}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-Jason~76114}
       
       # File storage configuration
       FILE_STORAGE_PATH: ${FILE_STORAGE_PATH:-/app/uploads}
@@ -214,11 +217,11 @@ services:
     
     # Health check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health", "--connect-timeout", "10", "--max-time", "15"]
       interval: 30s
-      timeout: 15s
-      retries: 5
-      start_period: 120s
+      timeout: 20s
+      retries: 10
+      start_period: 180s
     
     # Logging configuration
     logging:

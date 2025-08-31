@@ -6,12 +6,12 @@ import cn.hutool.core.util.StrUtil;
 import com.usdttrading.entity.Admin;
 import com.usdttrading.security.RSAUtil;
 import com.usdttrading.service.AdminService;
-import com.usdttrading.util.ApiResult;
+import com.usdttrading.dto.ApiResponse;
 import com.usdttrading.vo.AdminLoginRequest;
 import com.usdttrading.vo.AdminLoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.annotation.Resource;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,13 +45,13 @@ public class AdminAuthController {
      */
     @PostMapping("/login")
     @Operation(summary = "管理員登入", description = "管理員使用用戶名密碼登入系統")
-    public ApiResult<AdminLoginResponse> login(@RequestBody @Validated AdminLoginRequest request) {
+    public ApiResponse<AdminLoginResponse> login(@RequestBody @Validated AdminLoginRequest request) {
         try {
             log.info("管理員登入請求: username={}", request.getUsername());
             
             // 參數驗證
             if (StrUtil.isBlank(request.getUsername()) || StrUtil.isBlank(request.getPassword())) {
-                return ApiResult.error("用戶名和密碼不能為空");
+                return ApiResponse.error("用戶名和密碼不能為空");
             }
             
             // RSA解密密碼
@@ -69,13 +69,13 @@ public class AdminAuthController {
             Admin admin = adminService.login(request.getUsername(), decryptedPassword);
             if (admin == null) {
                 log.warn("管理員登入失敗: username={}", request.getUsername());
-                return ApiResult.error("用戶名或密碼錯誤");
+                return ApiResponse.error("用戶名或密碼錯誤");
             }
             
             // 檢查管理員狀態
             if (!"active".equals(admin.getStatus())) {
                 log.warn("管理員帳戶已停用: username={}, status={}", request.getUsername(), admin.getStatus());
-                return ApiResult.error("帳戶已停用，請聯繫系統管理員");
+                return ApiResponse.error("帳戶已停用，請聯繫系統管理員");
             }
             
             // 生成Sa-Token
@@ -94,11 +94,11 @@ public class AdminAuthController {
                 .build();
                 
             log.info("管理員登入成功: username={}, adminId={}", request.getUsername(), admin.getId());
-            return ApiResult.success(response, "管理員登入成功");
+            return ApiResponse.success("管理員登入成功", response);
             
         } catch (Exception e) {
             log.error("管理員登入異常: username={}, error={}", request.getUsername(), e.getMessage(), e);
-            return ApiResult.error("登入失敗: " + e.getMessage());
+            return ApiResponse.error("登入失敗: " + e.getMessage());
         }
     }
 
@@ -107,7 +107,7 @@ public class AdminAuthController {
      */
     @PostMapping("/logout")
     @Operation(summary = "管理員登出", description = "管理員安全登出系統")
-    public ApiResult<Void> logout() {
+    public ApiResponse<Void> logout() {
         try {
             Long adminId = StpUtil.getLoginIdAsLong();
             log.info("管理員登出: adminId={}", adminId);
@@ -120,10 +120,10 @@ public class AdminAuthController {
             // 執行登出
             StpUtil.logout();
             
-            return ApiResult.success(null, "管理員登出成功");
+            return ApiResponse.success();
         } catch (Exception e) {
             log.error("管理員登出異常: {}", e.getMessage(), e);
-            return ApiResult.error("登出失敗");
+            return ApiResponse.error("登出失敗");
         }
     }
 
@@ -132,7 +132,7 @@ public class AdminAuthController {
      */
     @GetMapping("/me")
     @Operation(summary = "獲取管理員信息", description = "獲取當前登入管理員的詳細信息")
-    public ApiResult<Admin> getCurrentAdmin() {
+    public ApiResponse<Admin> getCurrentAdmin() {
         try {
             // 檢查登入狀態
             StpUtil.checkLogin();
@@ -141,16 +141,16 @@ public class AdminAuthController {
             // 獲取管理員信息
             Admin admin = adminService.getById(adminId);
             if (admin == null) {
-                return ApiResult.error("管理員信息不存在");
+                return ApiResponse.error("管理員信息不存在");
             }
             
             // 清除敏感信息
             admin.setPassword(null);
             
-            return ApiResult.success(admin, "獲取管理員信息成功");
+            return ApiResponse.success("獲取管理員信息成功", admin);
         } catch (Exception e) {
             log.error("獲取管理員信息異常: {}", e.getMessage(), e);
-            return ApiResult.error("獲取管理員信息失敗");
+            return ApiResponse.error("獲取管理員信息失敗");
         }
     }
 
@@ -159,7 +159,7 @@ public class AdminAuthController {
      */
     @PostMapping("/change-password")
     @Operation(summary = "修改密碼", description = "管理員修改登入密碼")
-    public ApiResult<Void> changePassword(@RequestBody @Validated Map<String, String> request) {
+    public ApiResponse<Void> changePassword(@RequestBody @Validated Map<String, String> request) {
         try {
             // 檢查登入狀態
             StpUtil.checkLogin();
@@ -169,7 +169,7 @@ public class AdminAuthController {
             String newPassword = request.get("new_password");
             
             if (StrUtil.isBlank(currentPassword) || StrUtil.isBlank(newPassword)) {
-                return ApiResult.error("當前密碼和新密碼不能為空");
+                return ApiResponse.error("當前密碼和新密碼不能為空");
             }
             
             // RSA解密密碼
@@ -183,7 +183,7 @@ public class AdminAuthController {
             // 執行密碼修改
             boolean success = adminService.changePassword(adminId, currentPassword, newPassword);
             if (!success) {
-                return ApiResult.error("當前密碼錯誤或密碼修改失敗");
+                return ApiResponse.error("當前密碼錯誤或密碼修改失敗");
             }
             
             // 記錄操作日誌
@@ -193,11 +193,11 @@ public class AdminAuthController {
             StpUtil.logout();
             
             log.info("管理員密碼修改成功: adminId={}", adminId);
-            return ApiResult.success(null, "密碼修改成功，請重新登入");
+            return ApiResponse.success();
             
         } catch (Exception e) {
             log.error("管理員密碼修改異常: {}", e.getMessage(), e);
-            return ApiResult.error("密碼修改失敗");
+            return ApiResponse.error("密碼修改失敗");
         }
     }
 
@@ -206,7 +206,7 @@ public class AdminAuthController {
      */
     @GetMapping("/public-key")
     @Operation(summary = "獲取RSA公鑰", description = "獲取用於加密敏感數據的RSA公鑰")
-    public ApiResult<Map<String, String>> getPublicKey() {
+    public ApiResponse<Map<String, String>> getPublicKey() {
         try {
             String publicKey = rsaUtil.getPublicKeyString();
             
@@ -215,10 +215,10 @@ public class AdminAuthController {
             result.put("keyType", "RSA");
             result.put("keySize", "2048");
             
-            return ApiResult.success(result, "獲取RSA公鑰成功");
+            return ApiResponse.success("獲取RSA公鑰成功", result);
         } catch (Exception e) {
             log.error("獲取RSA公鑰失敗: {}", e.getMessage(), e);
-            return ApiResult.error("獲取RSA公鑰失敗");
+            return ApiResponse.error("獲取RSA公鑰失敗");
         }
     }
 
@@ -227,7 +227,7 @@ public class AdminAuthController {
      */
     @GetMapping("/session/validate")
     @Operation(summary = "驗證會話", description = "驗證當前管理員會話是否有效")
-    public ApiResult<Map<String, Object>> validateSession() {
+    public ApiResponse<Map<String, Object>> validateSession() {
         try {
             // 檢查登入狀態
             StpUtil.checkLogin();
@@ -241,13 +241,13 @@ public class AdminAuthController {
             sessionInfo.put("expiresIn", tokenInfo.getTokenTimeout());
             sessionInfo.put("isValid", true);
             
-            return ApiResult.success(sessionInfo, "會話驗證成功");
+            return ApiResponse.success("會話驗證成功", sessionInfo);
         } catch (Exception e) {
             log.warn("會話驗證失敗: {}", e.getMessage());
             Map<String, Object> sessionInfo = new HashMap<>();
             sessionInfo.put("isValid", false);
             sessionInfo.put("error", e.getMessage());
-            return ApiResult.success(sessionInfo, "會話已過期");
+            return ApiResponse.success("會話已過期", sessionInfo);
         }
     }
 

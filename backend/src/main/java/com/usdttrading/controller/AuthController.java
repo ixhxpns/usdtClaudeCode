@@ -14,6 +14,7 @@ import com.usdttrading.utils.ValidationUtils;
 import com.usdttrading.utils.RequestUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -658,24 +659,66 @@ public class AuthController {
      * 獲取RSA公钥
      */
     @GetMapping("/public-key")
-    @Operation(summary = "獲取RSA公钥", description = "獲取用於前端加密的RSA公钥")
+    @Operation(summary = "獲取RSA公钥", description = "獲取用於前端加密的RSA公钥，支持多種格式")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "獲取成功"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "獲取失敗")
     })
-    public ApiResponse<Map<String, Object>> getPublicKey() {
+    public ApiResponse<Map<String, Object>> getPublicKey(
+            @Parameter(description = "公钥格式: base64(原始), pem(標準PEM), both(兩種格式)")
+            @RequestParam(defaultValue = "both") String format) {
         try {
-            String publicKey = rsaUtil.getPublicKeyString();
             Map<String, Object> result = new HashMap<>();
-            result.put("publicKey", publicKey);
-            result.put("keyType", "RSA");
-            result.put("keySize", "2048");
-            result.put("algorithm", "RSA/ECB/PKCS1Padding");
+            
+            // 獲取公钥詳細資訊
+            Map<String, Object> keyDetails = rsaUtil.getPublicKeyDetails();
+            result.putAll(keyDetails);
+            
+            // 根據要求的格式返回公钥
+            switch (format.toLowerCase()) {
+                case "base64":
+                    result.put("publicKey", rsaUtil.getPublicKeyString());
+                    result.put("format", "Base64 (X.509 DER)");
+                    break;
+                case "pem":
+                    result.put("publicKey", rsaUtil.getPublicKeyPEMString());
+                    result.put("format", "PEM (X.509)");
+                    break;
+                case "both":
+                default:
+                    result.put("publicKey", rsaUtil.getPublicKeyString());
+                    result.put("publicKeyPEM", rsaUtil.getPublicKeyPEMString());
+                    result.put("format", "Both (Base64 and PEM)");
+                    break;
+            }
+            
+            // 添加使用指南
+            result.put("usage", createUsageGuide());
+            
             return ApiResponse.success(result);
         } catch (Exception e) {
             log.error("獲取RSA公钥失敗: {}", e.getMessage());
             return ApiResponse.error("獲取公钥失敗，請聯繫系統管理員");
         }
+    }
+    
+    /**
+     * 創建使用指南
+     */
+    private Map<String, Object> createUsageGuide() {
+        Map<String, Object> usage = new HashMap<>();
+        
+        Map<String, String> libraries = new HashMap<>();
+        libraries.put("JSEncrypt", "PEM格式 - 使用publicKeyPEM字段");
+        libraries.put("node-rsa", "PEM格式 - 使用publicKeyPEM字段");
+        libraries.put("crypto-js", "Base64或PEM格式 - 使用publicKey或publicKeyPEM字段");
+        libraries.put("Web Crypto API", "Base64轉為ArrayBuffer - 使用publicKey字段");
+        
+        usage.put("recommendedLibraries", libraries);
+        usage.put("algorithm", "RSA/ECB/PKCS1Padding");
+        usage.put("maxEncryptSize", "245 bytes (對於2048位RSA钥" + ")");
+        
+        return usage;
     }
 
     /**

@@ -112,6 +112,23 @@
               />
             </div>
 
+            <!-- Connection Error Warning -->
+            <div v-if="showConnectionError" class="text-center">
+              <el-alert
+                title="连接问题检测"
+                type="warning"
+                :closable="true"
+                show-icon
+                class="mb-4"
+                @close="showConnectionError = false"
+              >
+                <template #default>
+                  <p>检测到后端服务连接问题，这可能影响登录功能。</p>
+                  <el-button size="small" @click="openDiagnostic">🔧 打开诊断工具</el-button>
+                </template>
+              </el-alert>
+            </div>
+
             <!-- Login Button -->
             <el-form-item>
               <el-button
@@ -152,6 +169,12 @@
         </p>
       </div>
     </div>
+
+    <!-- 系统诊断工具 -->
+    <AdminDiagnostic 
+      ref="diagnosticRef" 
+      :auto-show="false" 
+    />
   </div>
 </template>
 
@@ -162,6 +185,8 @@ import { ElForm, ElMessage } from 'element-plus'
 import { Monitor, User, Lock, Warning } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { Validator } from '@/utils/common'
+import { checkAPIHealth } from '@/utils/crypto'
+import AdminDiagnostic from '@/components/AdminDiagnostic.vue'
 import type { AdminLoginRequest } from '@/types/admin'
 
 // Hooks
@@ -171,6 +196,7 @@ const authStore = useAuthStore()
 
 // Refs
 const loginFormRef = ref<InstanceType<typeof ElForm>>()
+const diagnosticRef = ref<InstanceType<typeof AdminDiagnostic>>()
 
 // Reactive data
 const loginForm = reactive<AdminLoginRequest>({
@@ -180,6 +206,7 @@ const loginForm = reactive<AdminLoginRequest>({
 })
 
 const showMfaField = ref(false)
+const showConnectionError = ref(false)
 const maxLoginAttempts = 5
 const lockoutTimer = ref<NodeJS.Timeout>()
 const lockoutTimeRemaining = ref(0)
@@ -227,11 +254,37 @@ const handleLogin = async () => {
   } catch (error: any) {
     console.error('管理员登录失败:', error)
     
+    // 检查是否是连接问题
+    if (error.message?.includes('连接') || error.message?.includes('404') || error.message?.includes('网络')) {
+      showConnectionError.value = true
+    }
+    
     // 如果是MFA错误，显示MFA输入框
     if (error.message?.includes('MFA') || error.message?.includes('双因子')) {
       showMfaField.value = true
       ElMessage.warning('请输入双因子认证码')
     }
+  }
+}
+
+// 打开诊断工具
+const openDiagnostic = () => {
+  if (diagnosticRef.value) {
+    diagnosticRef.value.openDiagnostic?.()
+  }
+}
+
+// 检查API健康状态
+const checkAPIStatus = async () => {
+  try {
+    const health = await checkAPIHealth()
+    if (!health.success && !health.partialSuccess) {
+      showConnectionError.value = true
+      console.warn('⚠️ API健康检查失败，建议使用诊断工具')
+    }
+  } catch (error) {
+    console.warn('⚠️ 无法检查API状态:', error)
+    // 不显示错误，避免在开发环境中造成困扰
   }
 }
 
@@ -247,7 +300,7 @@ const updateLockoutTimer = () => {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   // 如果已经登录，重定向到控制面板
   if (authStore.isAuthenticated) {
     router.push('/dashboard')
@@ -258,6 +311,11 @@ onMounted(() => {
   if (authStore.isLocked) {
     updateLockoutTimer()
   }
+  
+  // 延迟检查API状态，避免阻塞页面加载
+  setTimeout(() => {
+    checkAPIStatus()
+  }, 2000)
 })
 
 onUnmounted(() => {
