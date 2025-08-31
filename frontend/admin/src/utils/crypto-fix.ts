@@ -6,9 +6,9 @@ let rsaEncrypt: JSEncrypt | null = null
 
 // 修复后的API端点 - 优先使用工作的端点
 const API_ENDPOINTS = [
-  'http://localhost:8080/api/test/rsa-key',
-  'http://localhost:8080/api/admin/auth/public-key', 
-  'http://localhost:8080/api/auth/public-key',
+  'http://localhost:8090/api/test/rsa-key',
+  'http://localhost:8090/api/admin/auth/public-key', 
+  'http://localhost:8090/api/auth/public-key',
   '/api/admin/auth/public-key',
   '/api/auth/public-key'
 ]
