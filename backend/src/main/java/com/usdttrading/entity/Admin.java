@@ -35,8 +35,9 @@ public class Admin extends BaseEntity {
     private String email;
 
     /**
-     * 手機號碼
+     * 手機號碼（數據庫中不存在此欄位）
      */
+    @TableField(exist = false)
     private String phone;
 
     /**
@@ -132,9 +133,10 @@ public class Admin extends BaseEntity {
     }
 
     /**
-     * 檢查是否啟用雙因子認證
+
+     * 檢查是否完整配置了雙因子認證
      */
-    public boolean isMfaEnabled() {
+    public boolean isMfaFullyEnabled() {
         return Boolean.TRUE.equals(mfaEnabled) && mfaSecret != null;
     }
 }

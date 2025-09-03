@@ -13,11 +13,11 @@ async function fetchPublicKey(): Promise<string> {
   try {
     // 尝试多个可能的API端点
     const endpoints = [
-      'http://localhost:8080/api/admin/auth/public-key',
-      'http://localhost:8080/api/auth/public-key',
+      'http://localhost:8090/api/admin/auth/public-key',
+      'http://localhost:8090/api/auth/public-key',
       '/api/admin/auth/public-key',
       '/api/auth/public-key',
-      '/api/security/public-key'
+      '/api/auth/public-key'
     ];
     
     let lastError: Error | null = null;
@@ -221,11 +221,11 @@ export function clearPublicKeyCache(): void {
  */
 export async function testPublicKeyConnection(): Promise<boolean> {
   const endpoints = [
-    'http://localhost:8080/api/admin/auth/public-key',
-    'http://localhost:8080/api/auth/public-key',
+    'http://localhost:8090/api/admin/auth/public-key',
+    'http://localhost:8090/api/auth/public-key',
     '/api/admin/auth/public-key',
     '/api/auth/public-key', 
-    '/api/security/public-key'
+    '/api/auth/public-key'
   ];
   
   for (const endpoint of endpoints) {
@@ -261,10 +261,10 @@ export async function testPublicKeyConnection(): Promise<boolean> {
  */
 export async function checkAPIHealth(): Promise<{success: boolean, details: any}> {
   const endpoints = [
-    { name: '管理员公钥端点', url: 'http://localhost:8080/api/admin/auth/public-key' },
-    { name: '通用公钥端点', url: 'http://localhost:8080/api/auth/public-key' },
-    { name: '安全公钥端点', url: '/api/security/public-key' },
-    { name: '后端健康检查', url: 'http://localhost:8080/actuator/health' },
+    { name: '管理员公钥端点', url: 'http://localhost:8090/api/admin/auth/public-key' },
+    { name: '通用公钥端点', url: 'http://localhost:8090/api/auth/public-key' },
+    { name: '安全公钥端点', url: '/api/auth/public-key' },
+    { name: '后端健康检查', url: '/actuator/health' },
   ]
   
   const results = []

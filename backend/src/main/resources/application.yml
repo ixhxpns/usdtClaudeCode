@@ -127,7 +127,7 @@ spring:
   jackson:
     time-zone: GMT+8
     date-format: yyyy-MM-dd HH:mm:ss
-    default-property-inclusion: non_null
+    default-property-inclusion: always
     serialization:
       write-dates-as-timestamps: false
 
@@ -143,9 +143,9 @@ mybatis-plus:
       logic-delete-field: deleted
       logic-delete-value: 1
       logic-not-delete-value: 0
-      insert-strategy: not_null
-      update-strategy: not_null
-      select-strategy: not_empty
+      insert-strategy: not-null
+      update-strategy: not-null
+      select-strategy: not-empty
   mapper-locations: classpath*:mapper/**/*Mapper.xml
   type-aliases-package: com.usdttrading.entity
 
@@ -259,7 +259,7 @@ management:
       base-path: /actuator
   endpoint:
     health:
-      show-details: when_authorized
+      show-details: when-authorized
   metrics:
     export:
       prometheus:

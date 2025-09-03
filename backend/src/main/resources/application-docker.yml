@@ -1,6 +1,9 @@
 server:
   port: 8080
   servlet:
+
+    # 确保没有context-path，因为控制器已有/api前缀
+    # context-path: /
     encoding:
       charset: UTF-8
       enabled: true
@@ -61,8 +64,11 @@ business:
 logging:
   level:
     com.usdttrading: DEBUG
+    com.usdttrading.service.impl.AdminServiceImpl: DEBUG
+    com.usdttrading.controller.AdminAuthController: DEBUG
     org.springframework: INFO
     org.hibernate: WARN
+    org.springframework.security.crypto: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
@@ -74,7 +80,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,mappings,env,beans
   endpoint:
     health:
       show-details: always

@@ -217,11 +217,11 @@ services:
     
     # Health check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health", "--connect-timeout", "10", "--max-time", "15"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/actuator/health", "--connect-timeout", "5", "--max-time", "10"]
       interval: 30s
-      timeout: 20s
-      retries: 10
-      start_period: 180s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
     
     # Logging configuration
     logging:

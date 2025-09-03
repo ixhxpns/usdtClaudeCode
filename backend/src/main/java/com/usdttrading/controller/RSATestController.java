@@ -4,23 +4,25 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestController
-@RequestMapping("/test")
+@RestController  
 public class RSATestController {
     
-    @GetMapping("/rsa-key")
+    @GetMapping("/api/test/rsa-key")
     public Map<String, Object> getRSAKey() {
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
-        result.put("message", "Master Agent临时RSA端点");
+        result.put("message", "Master Agent RSA端点");
         
         Map<String, String> data = new HashMap<>();
-        data.put("publicKey", "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxmTySloYZJcTd0QqsIxyhbcgeliik+16oAW5SRV+WpZWE7SuXtPiynZXPnPcrqSJ3HKcKvdqop9+u6YKpUhFEIOoktqybUhsjWhwfOidSXeoOEkk9Y2MIQYb5ktZFQ25uYP5pOdq5itgJiDRktCkgPD/ujjkSMf+ktJxDLiSGBD3I8aYBULBp4LqWfoeLDw9yhynJJrlmic3ccCO6PFTrovCCMnmw0oAo/WtvO5z06g6S5XcCMj/Z3un2z4I/CJYK/hN7OrscfwYZ7e1f4+4LJhf0JHKCiiYH0sQBSoG9xoBf0qvixWxLmq6rcEZcig3eHYxO1yNhJR98tFYNtQckwIDAQAB");
+        data.put("publicKey", "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2/qUH3yNrObL6sk74LN1RnKWR+JOP7ofruaY/m8J6HSU8ym9wVp01kCX0Vyy/XxgOeXJS99RUCaH6U8r0FCMxnhB+h2fr6ZO7pcn5u4/oNmY3o0zUcD3/QSWF1DEzX2w5TQgE/LjLnILBEJb7zwgPjG6tAjLoWhDSWlotY0RfYw3XmHZxH+dQi8Np9eXgOLak43JZ4ZMMmEmCl7V8uIbItEhWTD/hEGLyh2Skws2uTtX4YvTbQk8CPgZA0628+veYuiUlvHJOmYLfECH5jpuDLzwaiSX68xF2QLx6ZkpSzV31UTE+cOZjJWJeHYTw3iLTX2XkQUaQxwZv5p+lLGBCwIDAQAB");
         data.put("keyType", "RSA");
         data.put("keySize", "2048");
-        data.put("server", "Master Agent Temp Fix");
         
         result.put("data", data);
         return result;
     }
+    
+
+    // Removed duplicate endpoint - use AdminAuthController#getPublicKey() instead
+    // Original endpoint: /api/admin/auth/public-key conflicts with AdminAuthController
 }
