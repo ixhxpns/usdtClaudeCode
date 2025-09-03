@@ -490,9 +490,11 @@ public class AdminAuthController {
             // 測試與現有哈希的匹配
             String existingHash = "$2b$10$0flRzvgRQBOAx.F.uuM8N.jEOa8P5/mXK23tJWsYnBdmVFJt6paDa";
             String existingHash2a = "$2a$10$anrI.n4dhiN3AIJ2ZzmWQeQRrWf.4HXEMC1EJi4ral7pDbUdiv.9m";
+            String actualAdminHash = "$2a$10$N9qo8uLOickgx2ZMRZoMye.IjZjcOvUS/zfUcHbz6JqHllgHQdxYy";
             
             result.put("matches2b", encoder.matches(password, existingHash));
             result.put("matches2a", encoder.matches(password, existingHash2a));
+            result.put("matchesActualAdmin", encoder.matches(password, actualAdminHash));
             
             return ApiResponse.success("BCrypt測試", result);
             

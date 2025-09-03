@@ -75,12 +75,13 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
                 return null;
             }
 
-            // 登入成功，重置失敗次數
-            resetLoginAttempts(admin.getId());
-
-            // 更新最後登入信息
+            // 登入成功，重置失敗次數並更新最後登入信息
+            admin.setLoginAttempts(0);
+            admin.setLockedUntil(null);
             admin.setLastLoginAt(LocalDateTime.now());
             updateById(admin);
+            
+            log.info("管理員登入信息已更新: adminId={}", admin.getId());
 
             log.info("管理員登入成功: {} (ID: {})", username, admin.getId());
             log.debug("=== 管理員登入流程結束 ===");
