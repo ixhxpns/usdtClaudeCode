@@ -35,8 +35,9 @@ public class Admin extends BaseEntity {
     private String email;
 
     /**
-     * 手機號碼
+     * 手機號碼（數據庫中不存在此欄位）
      */
+    @TableField(exist = false)
     private String phone;
 
     /**

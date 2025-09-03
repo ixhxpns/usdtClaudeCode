@@ -17,7 +17,7 @@ async function fetchPublicKey(): Promise<string> {
       'http://localhost:8090/api/auth/public-key',
       '/api/admin/auth/public-key',
       '/api/auth/public-key',
-      '/api/security/public-key'
+      '/api/auth/public-key'
     ];
     
     let lastError: Error | null = null;
@@ -225,7 +225,7 @@ export async function testPublicKeyConnection(): Promise<boolean> {
     'http://localhost:8090/api/auth/public-key',
     '/api/admin/auth/public-key',
     '/api/auth/public-key', 
-    '/api/security/public-key'
+    '/api/auth/public-key'
   ];
   
   for (const endpoint of endpoints) {
@@ -263,8 +263,8 @@ export async function checkAPIHealth(): Promise<{success: boolean, details: any}
   const endpoints = [
     { name: '管理员公钥端点', url: 'http://localhost:8090/api/admin/auth/public-key' },
     { name: '通用公钥端点', url: 'http://localhost:8090/api/auth/public-key' },
-    { name: '安全公钥端点', url: '/api/security/public-key' },
-    { name: '后端健康检查', url: 'http://localhost:8090/api/actuator/health' },
+    { name: '安全公钥端点', url: '/api/auth/public-key' },
+    { name: '后端健康检查', url: '/actuator/health' },
   ]
   
   const results = []

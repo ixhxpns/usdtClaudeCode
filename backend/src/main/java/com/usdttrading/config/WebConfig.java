@@ -33,6 +33,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+
+        // 紧急修复：临时禁用所有拦截器以恢复API路由
+        // TODO: 逐步重新启用拦截器，调试配置冲突问题
+        
+        /*
         // 1. 請求追蹤攔截器 - 最高優先級，為每個請求生成追蹤ID
         registry.addInterceptor(requestTraceInterceptor)
                 .addPathPatterns("/**")
@@ -55,5 +60,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/**")
                 .excludePathPatterns("/api/health", "/api/actuator/**", "/api/auth/captcha")
                 .order(4);
+        */
     }
 }

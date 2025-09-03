@@ -57,12 +57,15 @@ public class AdminAuthController {
             // RSA解密密碼
             String decryptedPassword;
             try {
+                log.debug("嘗試RSA解密密碼，加密密碼長度: {}", request.getPassword().length());
                 decryptedPassword = rsaUtil.decryptWithPrivateKey(request.getPassword());
-                log.info("RSA密碼解密成功");
+                log.info("RSA密碼解密成功，解密後密碼長度: {}", decryptedPassword.length());
+                log.debug("解密後的密碼: {}", decryptedPassword);
             } catch (Exception e) {
                 // 如果RSA解密失敗，嘗試使用原始密碼（降級處理）
                 log.warn("RSA密碼解密失敗，使用原始密碼: {}", e.getMessage());
                 decryptedPassword = request.getPassword();
+                log.debug("使用原始密碼: {}", decryptedPassword);
             }
             
             // 驗證管理員憑證
@@ -248,6 +251,254 @@ public class AdminAuthController {
             sessionInfo.put("isValid", false);
             sessionInfo.put("error", e.getMessage());
             return ApiResponse.success("會話已過期", sessionInfo);
+        }
+    }
+
+
+    /**
+     * 管理員API測試端點
+     * 用於前後端集成測試和系統健康檢查
+     */
+    @GetMapping("/test")
+    @Operation(summary = "管理員API測試", description = "測試管理員模塊API連接狀態")
+    public ApiResponse<Map<String, Object>> adminTest() {
+        try {
+            Map<String, Object> data = new HashMap<>();
+            data.put("message", "Admin API working");
+            data.put("timestamp", System.currentTimeMillis());
+            data.put("module", "AdminAuth");
+            data.put("version", "1.0.0");
+            data.put("status", "OK");
+            
+            // 添加系統狀態信息
+            data.put("activeProfiles", System.getProperty("spring.profiles.active", "default"));
+            data.put("javaVersion", System.getProperty("java.version"));
+            
+            // 添加BCrypt測試
+            try {
+                org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder = 
+                    new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+                
+                String testPassword = "Admin123!";
+                String newHash = encoder.encode(testPassword);
+                
+                // 測試現有哈希
+                String existingHash2a = "$2a$10$anrI.n4dhiN3AIJ2ZzmWQeQRrWf.4HXEMC1EJi4ral7pDbUdiv.9m";
+                String existingHash2b = "$2b$10$0flRzvgRQBOAx.F.uuM8N.jEOa8P5/mXK23tJWsYnBdmVFJt6paDa";
+                
+                Map<String, Object> bcryptTest = new HashMap<>();
+                bcryptTest.put("newHash", newHash);
+                bcryptTest.put("matches2a", encoder.matches(testPassword, existingHash2a));
+                bcryptTest.put("matches2b", encoder.matches(testPassword, existingHash2b));
+                bcryptTest.put("matchesNewHash", encoder.matches(testPassword, newHash));
+                
+                data.put("bcryptTest", bcryptTest);
+                
+            } catch (Exception e) {
+                data.put("bcryptError", e.getMessage());
+            }
+            
+            log.info("管理員API測試請求成功");
+            return ApiResponse.success("管理員API測試成功", data);
+            
+        } catch (Exception e) {
+            log.error("管理員API測試失敗", e);
+            return ApiResponse.error(500, "管理員API測試失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 調試接口：測試admin用戶查詢和密碼驗證
+     */
+    @GetMapping("/debug/test-admin")
+    @Operation(summary = "調試admin用戶", description = "測試admin用戶查詢和密碼驗證")
+    public ApiResponse<Map<String, Object>> debugTestAdmin() {
+        try {
+            Map<String, Object> result = new HashMap<>();
+            
+            // 測試查詢admin用戶
+            Admin admin = adminService.getByUsername("admin");
+            if (admin == null) {
+                result.put("userFound", false);
+                result.put("error", "Admin user not found");
+                return ApiResponse.success("調試結果", result);
+            }
+            
+            result.put("userFound", true);
+            result.put("userId", admin.getId());
+            result.put("username", admin.getUsername());
+            result.put("status", admin.getStatus());
+            result.put("isActive", admin.isActive());
+            result.put("isAccountLocked", admin.isAccountLocked());
+            result.put("passwordHashPrefix", admin.getPassword().substring(0, Math.min(20, admin.getPassword().length())));
+            
+            // 測試兩個密碼版本
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder = 
+                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+            
+            boolean passwordMatchesOld = encoder.matches("Admin123!", admin.getPassword());
+            boolean passwordMatchesNew = encoder.matches("Admin123", admin.getPassword());
+            
+            result.put("passwordMatches_Admin123!", passwordMatchesOld);
+            result.put("passwordMatches_Admin123", passwordMatchesNew);
+            
+            // 測試當前數據庫中的哈希類型
+            String passwordHash = admin.getPassword();
+            result.put("hashType", passwordHash.startsWith("$2a$") ? "BCrypt-2a" : 
+                                   passwordHash.startsWith("$2b$") ? "BCrypt-2b" : "Unknown");
+            result.put("hashLength", passwordHash.length());
+            
+            return ApiResponse.success("調試測試完成", result);
+            
+        } catch (Exception e) {
+            log.error("調試測試失敗", e);
+            return ApiResponse.error("調試測試失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 調試接口：完整登入流程診斷
+     */
+    @PostMapping("/debug/login-diagnosis")
+    @Operation(summary = "登入診斷", description = "詳細診斷登入流程的每一步")
+    public ApiResponse<Map<String, Object>> loginDiagnosis(@RequestBody AdminLoginRequest request) {
+        Map<String, Object> diagnosis = new HashMap<>();
+        
+        try {
+            log.info("開始登入診斷: username={}", request.getUsername());
+            
+            // 步驟1: 參數驗證
+            Map<String, Object> step1 = new HashMap<>();
+            step1.put("step", "參數驗證");
+            step1.put("username_provided", request.getUsername() != null);
+            step1.put("username_length", request.getUsername() != null ? request.getUsername().length() : 0);
+            step1.put("password_provided", request.getPassword() != null);
+            step1.put("password_length", request.getPassword() != null ? request.getPassword().length() : 0);
+            step1.put("success", StrUtil.isNotBlank(request.getUsername()) && StrUtil.isNotBlank(request.getPassword()));
+            diagnosis.put("step1_validation", step1);
+            
+            if (StrUtil.isBlank(request.getUsername()) || StrUtil.isBlank(request.getPassword())) {
+                diagnosis.put("error", "參數驗證失敗");
+                return ApiResponse.success("登入診斷結果", diagnosis);
+            }
+            
+            // 步驟2: RSA解密測試
+            Map<String, Object> step2 = new HashMap<>();
+            step2.put("step", "RSA解密");
+            String decryptedPassword = null;
+            try {
+                decryptedPassword = rsaUtil.decryptWithPrivateKey(request.getPassword());
+                step2.put("decryption_success", true);
+                step2.put("decrypted_length", decryptedPassword.length());
+                step2.put("decrypted_password", decryptedPassword); // 僅調試模式顯示
+            } catch (Exception e) {
+                step2.put("decryption_success", false);
+                step2.put("decryption_error", e.getMessage());
+                step2.put("fallback_to_original", true);
+                decryptedPassword = request.getPassword();
+                step2.put("original_password", decryptedPassword);
+            }
+            diagnosis.put("step2_rsa_decrypt", step2);
+            
+            // 步驟3: 用戶查詢
+            Map<String, Object> step3 = new HashMap<>();
+            step3.put("step", "用戶查詢");
+            Admin admin = adminService.getByUsername(request.getUsername());
+            step3.put("user_found", admin != null);
+            if (admin != null) {
+                step3.put("user_id", admin.getId());
+                step3.put("user_status", admin.getStatus());
+                step3.put("is_active", admin.isActive());
+                step3.put("is_locked", admin.isAccountLocked());
+                step3.put("password_hash_prefix", admin.getPassword().substring(0, Math.min(15, admin.getPassword().length())));
+            }
+            diagnosis.put("step3_user_query", step3);
+            
+            if (admin == null) {
+                diagnosis.put("error", "用戶不存在");
+                return ApiResponse.success("登入診斷結果", diagnosis);
+            }
+            
+            // 步驟4: 密碼驗證
+            Map<String, Object> step4 = new HashMap<>();
+            step4.put("step", "密碼驗證");
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder = 
+                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+            
+            boolean passwordMatches = encoder.matches(decryptedPassword, admin.getPassword());
+            step4.put("password_matches", passwordMatches);
+            step4.put("input_password", decryptedPassword);
+            step4.put("stored_hash_type", admin.getPassword().substring(0, 4));
+            
+            // 測試常見密碼
+            String[] testPasswords = {"Admin123!", "Admin123", "admin123", "123456"};
+            Map<String, Boolean> passwordTests = new HashMap<>();
+            for (String testPwd : testPasswords) {
+                passwordTests.put(testPwd, encoder.matches(testPwd, admin.getPassword()));
+            }
+            step4.put("test_passwords", passwordTests);
+            
+            diagnosis.put("step4_password_check", step4);
+            
+            // 步驟5: 狀態檢查
+            Map<String, Object> step5 = new HashMap<>();
+            step5.put("step", "狀態檢查");
+            boolean statusOk = "active".equals(admin.getStatus());
+            step5.put("status_check_passed", statusOk);
+            step5.put("current_status", admin.getStatus());
+            step5.put("expected_status", "active");
+            diagnosis.put("step5_status_check", step5);
+            
+            // 步驟6: 最終結果
+            Map<String, Object> step6 = new HashMap<>();
+            step6.put("step", "最終結果");
+            boolean overallSuccess = passwordMatches && statusOk;
+            step6.put("login_would_succeed", overallSuccess);
+            if (!overallSuccess) {
+                String reason = !passwordMatches ? "密碼錯誤" : "帳戶狀態異常";
+                step6.put("failure_reason", reason);
+            }
+            diagnosis.put("step6_final_result", step6);
+            
+            log.info("登入診斷完成: username={}, result={}", request.getUsername(), overallSuccess);
+            return ApiResponse.success("登入診斷完成", diagnosis);
+            
+        } catch (Exception e) {
+            log.error("登入診斷異常: {}", e.getMessage(), e);
+            diagnosis.put("diagnosis_error", e.getMessage());
+            return ApiResponse.error("登入診斷失敗: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 臨時測試端點：生成BCrypt哈希
+     */
+    @GetMapping("/temp/bcrypt/{password}")
+    @Operation(summary = "臨時生成BCrypt哈希", description = "測試用途")
+    public ApiResponse<Map<String, Object>> generateBCryptHash(@PathVariable String password) {
+        try {
+            org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder encoder = 
+                new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+            
+            String hash = encoder.encode(password);
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("password", password);
+            result.put("hash", hash);
+            result.put("matches", encoder.matches(password, hash));
+            
+            // 測試與現有哈希的匹配
+            String existingHash = "$2b$10$0flRzvgRQBOAx.F.uuM8N.jEOa8P5/mXK23tJWsYnBdmVFJt6paDa";
+            String existingHash2a = "$2a$10$anrI.n4dhiN3AIJ2ZzmWQeQRrWf.4HXEMC1EJi4ral7pDbUdiv.9m";
+            
+            result.put("matches2b", encoder.matches(password, existingHash));
+            result.put("matches2a", encoder.matches(password, existingHash2a));
+            
+            return ApiResponse.success("BCrypt測試", result);
+            
+        } catch (Exception e) {
+            log.error("BCrypt測試失敗", e);
+            return ApiResponse.error("BCrypt測試失敗: " + e.getMessage());
         }
     }
 
