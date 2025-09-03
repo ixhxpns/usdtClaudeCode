@@ -107,9 +107,9 @@ public class PriceServiceImpl implements PriceService {
     @Transactional
     public ApiResponse<String> updatePrice(BigDecimal buyPrice, BigDecimal sellPrice, String reason) {
         try {
-            // 驗證價格合理性
-            if (buyPrice.compareTo(sellPrice) <= 0) {
-                return ApiResponse.error("買入價格必須高於賣出價格");
+            // 驗證價格合理性 - 賣出價應該高於買入價（平台賺取差價）
+            if (sellPrice.compareTo(buyPrice) <= 0) {
+                return ApiResponse.error("賣出價格必須高於買入價格");
             }
 
             BigDecimal basePrice = buyPrice.add(sellPrice).divide(new BigDecimal("2"), 2, RoundingMode.HALF_UP);
@@ -224,8 +224,8 @@ public class PriceServiceImpl implements PriceService {
                 BigDecimal spreadPercent = new BigDecimal(getConfigValue("price.spread_percent", "0.02"));
                 BigDecimal spread = externalPrice.multiply(spreadPercent);
                 
-                BigDecimal buyPrice = externalPrice.add(spread).setScale(2, RoundingMode.HALF_UP);
-                BigDecimal sellPrice = externalPrice.subtract(spread).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal buyPrice = externalPrice.subtract(spread).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal sellPrice = externalPrice.add(spread).setScale(2, RoundingMode.HALF_UP);
                 
                 // 保存價格
                 PriceHistory priceHistory = new PriceHistory();
@@ -327,8 +327,8 @@ public class PriceServiceImpl implements PriceService {
             BigDecimal basePrice = latestPrice.getPrice();
             BigDecimal spread = basePrice.multiply(spreadPercent);
             
-            priceData.put("buyPrice", basePrice.add(spread).setScale(2, RoundingMode.HALF_UP));
-            priceData.put("sellPrice", basePrice.subtract(spread).setScale(2, RoundingMode.HALF_UP));
+            priceData.put("buyPrice", basePrice.subtract(spread).setScale(2, RoundingMode.HALF_UP));
+            priceData.put("sellPrice", basePrice.add(spread).setScale(2, RoundingMode.HALF_UP));
             priceData.put("basePrice", basePrice);
             priceData.put("spreadPercent", spreadPercent.multiply(new BigDecimal("100")));
             priceData.put("lastUpdate", latestPrice.getCreatedAt());

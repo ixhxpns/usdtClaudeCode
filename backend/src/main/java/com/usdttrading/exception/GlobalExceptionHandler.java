@@ -156,6 +156,34 @@ public class GlobalExceptionHandler {
                     .body(ApiResponse.error(40001, e.getMessage()));
         }
         
+        // 處理JSON解析相關錯誤
+        if (e.getMessage() != null && (e.getMessage().contains("JSON") || 
+            e.getMessage().contains("parse") || 
+            e.getMessage().contains("character"))) {
+            log.warn("JSON解析異常 - URL: {}, 錯誤: {}", request.getRequestURI(), e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(40000, "請求數據格式錯誤，請檢查特殊字符"));
+        }
+        
+        // 處理數據庫連接相關錯誤
+        if (e.getMessage() != null && (e.getMessage().contains("Database") || 
+            e.getMessage().contains("Connection") ||
+            e.getMessage().contains("SQL"))) {
+            log.error("數據庫連接異常 - URL: {}", request.getRequestURI(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error(50001, "數據庫服務暫時不可用，請稍後重試"));
+        }
+        
+        // 處理認證相關錯誤
+        if (e.getMessage() != null && (e.getMessage().contains("用戶名或密碼錯誤") ||
+            e.getMessage().contains("Authentication") ||
+            e.getMessage().contains("Credential"))) {
+            log.warn("認證失敗 - URL: {}, 用戶: {}", request.getRequestURI(), 
+                    request.getParameter("username"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error(40001, "用戶名或密碼錯誤，請檢查登入信息"));
+        }
+        
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error(50000, "系統運行異常"));
     }
