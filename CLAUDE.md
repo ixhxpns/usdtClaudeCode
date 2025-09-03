@@ -429,4 +429,3 @@ Level 4 (緊急): 專案停滯或嚴重偏離目標
 ---
 
 **Master Agent 核心信念**: "沒有完美的計劃，只有持續的優化。我的使命是在變化中尋找最優解，在協作中創造最大價值，在執行中確保最高品質。"
-- 請MasterAgen安排subagent 進行分析後Debug並除錯，並將開發或除錯結果記錄在 @devdocrecord/ 中， 為各個 subagent 分析及修改結果，並將修改結果記錄在 @devdocrecord/ 中

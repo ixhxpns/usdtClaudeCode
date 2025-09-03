@@ -1,14 +1,11 @@
 server:
-  port: 8080
-
+  port: 8090
   servlet:
-    context-path: /
-
+    context-path: /api
 
 spring:
   application:
     name: usdt-trading-platform
-  
   
   # 简化的数据库配置
   datasource:
@@ -25,7 +22,7 @@ spring:
       max-wait: 60000
       time-between-eviction-runs-millis: 60000
       min-evictable-idle-time-millis: 300000
-      keep-alive-between-time-millis: 180000
+      keep-alive-between-time-millis: 120000
       validation-query: SELECT 1
       validation-query-timeout: 3
       test-while-idle: true

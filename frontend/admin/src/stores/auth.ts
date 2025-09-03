@@ -70,19 +70,6 @@ export const useAuthStore = defineStore('adminAuth', () => {
       console.log('🔍 检测API健康状态...');
       const healthCheck = await import('@/utils/crypto').then(m => m.checkAPIHealth());
       console.log('API健康检查结果:', healthCheck);
-
-      // 在开发环境中启用详细调试
-      const isDevelopment = import.meta.env.DEV || import.meta.env.VITE_DEBUG_MODE;
-      if (isDevelopment) {
-        console.log('🔧 开发模式：启用详细登入调试');
-        try {
-          // 调用调试端点获取详细诊断信息
-          const diagnosisResponse = await AdminHttpClient.post('/admin/auth/debug/login-diagnosis', credentials);
-          console.log('📊 登入诊断结果:', diagnosisResponse);
-        } catch (debugError) {
-          console.warn('⚠️ 调试诊断失败:', debugError);
-        }
-      }
       
       let response: AdminLoginResponse;
       

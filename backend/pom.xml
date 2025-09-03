@@ -24,7 +24,7 @@
         <spring-boot.version>2.7.14</spring-boot.version>
         <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
         <druid.version>1.2.20</druid.version>
-        <redisson.version>3.17.7</redisson.version>
+        <redisson.version>3.24.3</redisson.version>
         <jwt.version>0.11.5</jwt.version>
         <tronweb4j.version>1.0.0</tronweb4j.version>
         <commons-lang3.version>3.13.0</commons-lang3.version>

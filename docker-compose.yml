@@ -217,7 +217,7 @@ services:
     
     # Health check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/actuator/health", "--connect-timeout", "5", "--max-time", "10"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/api/actuator/health", "--connect-timeout", "5", "--max-time", "10"]
       interval: 30s
       timeout: 15s
       retries: 5

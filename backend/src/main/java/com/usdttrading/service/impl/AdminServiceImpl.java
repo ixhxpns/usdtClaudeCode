@@ -32,44 +32,28 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     @Override
     public Admin login(String username, String password) {
         try {
-            log.debug("=== 開始管理員登入流程 ===");
-            log.debug("登入用戶名: {}", username);
-            log.debug("密碼長度: {}", password != null ? password.length() : 0);
-            
             // 根據用戶名查詢管理員
             Admin admin = getByUsername(username);
             if (admin == null) {
                 log.warn("管理員登入失敗: 用戶名不存在 - {}", username);
                 return null;
             }
-            
-            log.debug("找到管理員記錄 - ID: {}, 用戶名: {}, 狀態: {}", admin.getId(), admin.getUsername(), admin.getStatus());
-            log.debug("數據庫密碼哈希: {}", admin.getPassword());
 
             // 檢查帳戶狀態
             if (!admin.isActive()) {
-                log.warn("管理員登入失敗: 帳戶未激活 - {}, 當前狀態: {}", username, admin.getStatus());
+                log.warn("管理員登入失敗: 帳戶未激活 - {}", username);
                 return null;
             }
 
             // 檢查帳戶是否被鎖定
             if (admin.isAccountLocked()) {
-                log.warn("管理員登入失敗: 帳戶被鎖定 - {}, 鎖定到期時間: {}", username, admin.getLockedUntil());
+                log.warn("管理員登入失敗: 帳戶被鎖定 - {}", username);
                 return null;
             }
 
             // 驗證密碼
-            log.debug("開始密碼驗證");
-            log.debug("明文密碼: {}", password);
-            log.debug("數據庫哈希: {}", admin.getPassword());
-            
-            boolean passwordMatches = passwordEncoder.matches(password, admin.getPassword());
-            log.debug("密碼匹配結果: {}", passwordMatches);
-            
-            if (!passwordMatches) {
+            if (!passwordEncoder.matches(password, admin.getPassword())) {
                 log.warn("管理員登入失敗: 密碼錯誤 - {}", username);
-                log.warn("驗證失敗詳情: 明文='{}', 哈希='{}'", password, admin.getPassword());
-                
                 // 增加失敗次數
                 incrementLoginAttempts(admin.getId());
                 return null;
@@ -83,7 +67,6 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             updateById(admin);
 
             log.info("管理員登入成功: {} (ID: {})", username, admin.getId());
-            log.debug("=== 管理員登入流程結束 ===");
             return admin;
 
         } catch (Exception e) {
